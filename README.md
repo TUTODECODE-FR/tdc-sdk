@@ -119,6 +119,51 @@ Pour les utilisateurs préférant une interface graphique complète :
 
 ---
 
+## 🖥️ Compilation Multi-OS Native (macOS, Windows, Linux)
+
+L'IDE **TDC Studio** est bâti sur Flutter Desktop et se compile en application native autonome pour les trois systèmes d'exploitation :
+
+### 🍏 Compiler pour macOS (.app)
+```bash
+# Compilation de la version Release
+flutter build macos -t lib/tdc_studio_main.dart
+
+# Lancement direct de l'exécutable
+open build/macos/Build/Products/Release/TDC-Studio.app
+```
+
+### 🪟 Compiler pour Windows (.exe standalone)
+```powershell
+# Compilation de la version Release sous Windows
+flutter build windows -t lib/tdc_studio_main.dart
+
+# L'exécutable natif se trouve dans :
+# build/windows/x64/runner/Release/TDC-Studio.exe
+```
+
+### 🐧 Compiler pour Linux (.bin / AppImage / Tarball)
+```bash
+# Dépendances requises sous Ubuntu / Debian :
+# sudo apt install clang cmake ninja-build pkg-config libgtk-3-dev
+
+# Compilation de la version Release sous Linux
+flutter build linux -t lib/tdc_studio_main.dart
+
+# L'exécutable natif se trouve dans :
+# build/linux/x64/release/bundle/tdc_studio
+```
+
+---
+
+## 🛡️ Pipeline CI/CD & Conformité T2DECODE
+
+Tout commit ou proposition de cours via Merge Request (MR) sur le projet T2DECODE / TDC-SDK est rigoureusement audité par le pipeline de validation de sécurité et de conformité :
+- **`test_and_analyze`** : 0 avertissement bloquant (`dart analyze` propre) et 100% des tests unitaires au vert.
+- **`strict_type_compilation_check`** : Typage statique strict et intégrité de compilation multi-plateforme.
+- **`zero_trust_tamper_defense` & `gitleaks`** : Zéro secret ou fuite de clé privée dans le dépôt.
+- **`airgap_leak_canary`** : Garantie de fonctionnement 100% autonome sans connexion Internet obligatoire (*air-gapped*).
+- **`constant_time_crypto_test`** : Vérification cryptographique déterministe de la signature Ed25519.
+
 ## 📄 Exemple Complet de Fichier `.tdc` (DSL v2)
 
 ```tdc
