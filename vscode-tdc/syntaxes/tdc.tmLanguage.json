@@ -2,38 +2,78 @@
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
   "name": "TUTODECODE Script",
   "patterns": [
-    { "include": "#keywords" },
-    { "include": "#strings" },
+    { "include": "#comments" },
     { "include": "#triple-strings" },
-    { "include": "#operators" },
-    { "include": "#comments" }
+    { "include": "#strings" },
+    { "include": "#custom-category" },
+    { "include": "#keywords" },
+    { "include": "#properties" },
+    { "include": "#color-tokens" },
+    { "include": "#constants" },
+    { "include": "#numbers" }
   ],
   "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.tdc",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.line.number-sign.tdc",
+          "match": "^\\s*#.*$"
+        }
+      ]
+    },
+    "custom-category": {
+      "patterns": [
+        {
+          "match": "\\b(category)\\s+(custom)\\s+(\"[^\"]+\")",
+          "captures": {
+            "1": { "name": "keyword.control.tdc" },
+            "2": { "name": "storage.type.tdc" },
+            "3": { "name": "string.quoted.double.tdc" }
+          }
+        }
+      ]
+    },
     "keywords": {
       "patterns": [
         {
           "name": "keyword.control.tdc",
-          "match": "\\b(course|module|codeblock|quiz|question)\\b"
-        },
-        {
-          "name": "variable.other.property.tdc",
-          "match": "\\b(title|description|category|level|duration|icon|keywords|explanation)\\b"
-        },
-        {
-          "name": "constant.language.tdc",
-          "match": "\\b(linux|network|security|cloud|crypto|development|beginner|intermediate|advanced)\\b"
+          "match": "\\b(course|module|quiz|question|codeblock|metadata|category|custom)\\b"
         }
       ]
     },
-    "operators": {
+    "properties": {
       "patterns": [
         {
-          "name": "markup.inserted.tdc",
-          "match": "^\\s*\\+\\s*"
-        },
+          "name": "variable.other.property.tdc",
+          "match": "\\b(title|description|category|level|duration|icon|accent|author|author-key|signature|tdc-version|keywords|content|markdown|options|correctAnswer|explanation|label|color|executable|expectedOutput|language)\\b"
+        }
+      ]
+    },
+    "color-tokens": {
+      "patterns": [
         {
-          "name": "markup.deleted.tdc",
-          "match": "^\\s*\\-\\s*"
+          "name": "support.constant.color.tdc",
+          "match": "\\b(creme|mint|lavande|ambre|coral|sky|pink|emerald|cyan|gold|linux)\\b"
+        }
+      ]
+    },
+    "constants": {
+      "patterns": [
+        {
+          "name": "constant.language.tdc",
+          "match": "\\b(linux|network|security|cloud|crypto|development|beginner|intermediate|advanced|true|false)\\b"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.tdc",
+          "match": "\\b\\d+\\b"
         }
       ]
     },
@@ -56,18 +96,18 @@
         {
           "name": "markup.heading.markdown",
           "match": "^#+\\s+.*$"
-        }
-      ]
-    },
-    "comments": {
-      "patterns": [
-        {
-          "name": "comment.line.number-sign.tdc",
-          "match": "#.*$"
         },
         {
-          "name": "comment.line.double-slash.tdc",
-          "match": "//.*$"
+          "name": "markup.bold.markdown",
+          "match": "\\*\\*.*?\\*\\*"
+        },
+        {
+          "name": "markup.italic.markdown",
+          "match": "\\*.*?\\*"
+        },
+        {
+          "name": "markup.raw.block.markdown",
+          "match": "```[\\s\\S]*?```"
         }
       ]
     }
