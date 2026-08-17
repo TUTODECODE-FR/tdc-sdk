@@ -2,7 +2,7 @@
   "name": "vscode-tdc-language",
   "displayName": "TUTODECODE Script (.tdc) Language Support",
   "description": "Syntax highlighting, autocompletion, and snippets for TUTODECODE Script (.tdc) course language.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "tutodecode",
   "engines": {
     "vscode": "^1.70.0"
