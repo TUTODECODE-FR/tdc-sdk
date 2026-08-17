@@ -5,6 +5,8 @@
 [![VS Code Extension](https://img.shields.io/badge/VS%20Code-Extension%20Available-blue)](./vscode-tdc/)
 [![Platforms](https://img.shields.io/badge/Platforms-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey.svg)]()
 [![Air-Gapped](https://img.shields.io/badge/Security-Air--Gapped%20%26%20Sovereign-gold.svg)]()
+[![Donate with Liberapay](https://img.shields.io/liberapay/receives/tutodecode.svg?logo=liberapay&label=Faire%20un%20don)](https://liberapay.com/tutodecode/donate)
+[![Patrons](https://img.shields.io/liberapay/patrons/tutodecode.svg?logo=liberapay)](https://liberapay.com/tutodecode)
 
 Bienvenue dans l'écosystème officiel **TDC-SDK** du projet **TUTODECODE** !
 
@@ -203,6 +205,19 @@ Ansible permet l'automatisation sans agent (*agentless*) via OpenSSH.
   }
 }
 ```
+
+---
+
+## 💖 Soutenir le projet TUTODECODE
+
+**TUTODECODE** est une association à but non lucratif dédiée au logiciel libre, à l'éducation souveraine et à la transmission du savoir technique sans traçage ni publicité.
+
+Vous pouvez soutenir le développement continu de **TDC-SDK** et de **T2DECODE** via un don récurrent ou ponctuel sur **Liberapay** :
+
+[![Faire un don avec Liberapay](https://liberapay.com/assets/widgets/donate.svg)](https://liberapay.com/tutodecode/donate)
+
+- 🎁 Faire un don direct : [https://liberapay.com/tutodecode/donate](https://liberapay.com/tutodecode/donate)
+- 👥 Page des donateurs & mécènes : [https://liberapay.com/tutodecode](https://liberapay.com/tutodecode)
 
 ---
 
