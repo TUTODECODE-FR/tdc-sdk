@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
-# Copyright (C) 2024-2026 TUTODECODE Association <contact@tutodecode.org>
+# Copyright (C) 2026 TUTODECODE Association <contact@tutodecode.org>
 """
 TUTODECODE Script (.tdc) CLI Tool
 Linter, Auto-Formatter, and Converter for external text editors and CI pipelines.

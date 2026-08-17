@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-// Copyright (C) 2024-2026 TUTODECODE Association <contact@tutodecode.org>
+// Copyright (C) 2026 TUTODECODE Association <contact@tutodecode.org>
 // ============================================================
 // TDC SDK Desktop Studio IDE — Standalone Main
 // ============================================================

@@ -105,3 +105,13 @@ Une fois votre cours rédigé, validez sa conformité en ouvrant le terminal int
 - 🦊 **Dépôt GitLab TDC-SDK** : [https://gitlab.com/tutodecode-org/tdc-sdk](https://gitlab.com/tutodecode-org/tdc-sdk)
 - 💖 **Soutenir le projet** : [https://liberapay.com/tutodecode/donate](https://liberapay.com/tutodecode/donate)
 - 🏢 **Site Officiel** : [https://tutodecode.org](https://tutodecode.org)
+
+---
+
+<div align="center">
+
+**TDC-SDK** — Édité par l'Association TUTODECODE (Loi 1901, SIREN 102 763 133)
+
+© 2026 Association TUTODECODE. Tous droits réservés.
+
+</div>

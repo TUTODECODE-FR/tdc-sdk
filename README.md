@@ -221,11 +221,22 @@ Vous pouvez soutenir le développement continu de **TDC-SDK** et de **T2DECODE**
 
 ---
 
-## 📜 Licence & Gouvernance
+## ⚖️ Mentions Légales & Licence
 
-Le projet **TDC-SDK** est un logiciel libre sous licence **GNU General Public License v3.0 (GPL-3.0)**.  
-Développé et maintenu par l'**Association TUTODECODE (Loi 1901)**.
+Le projet **TDC-SDK** est développé et édité par l'**Association TUTODECODE** (Association Loi 1901 à but non lucratif, SIREN 102 763 133, RNA W134011400).
 
-- 🌐 Site officiel : [https://tutodecode.org](https://tutodecode.org)
-- 🦊 Dépôt GitLab : [https://gitlab.com/tutodecode-org/tdc-sdk](https://gitlab.com/tutodecode-org/tdc-sdk)
-- 📬 Contact : `contact@tutodecode.org`
+- **Fondateur & Président** : Maxime MARTIN CIVET
+- **Site Officiel** : [tutodecode.org](https://tutodecode.org)
+- **Licence** : [GNU General Public License v3.0 (GPLv3)](https://www.gnu.org/licenses/gpl-3.0) — Logiciel Libre et Souverain.
+
+<div align="center">
+
+**TDC-SDK** — Suite de développement et d'édition souveraine pour les cours et labs interactifs
+
+Édité par l'Association TUTODECODE (Loi 1901, SIREN 102 763 133)
+
+[Site Web](https://tutodecode.org) • [GitLab](https://gitlab.com/tutodecode-org/tdc-sdk) • [Faire un don](https://liberapay.com/tutodecode/donate) • [Contact](mailto:contact@tutodecode.org)
+
+© 2026 Association TUTODECODE. Tous droits réservés.
+
+</div>
