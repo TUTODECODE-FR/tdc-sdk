@@ -1,0 +1,14 @@
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# Binaires & gros bundles compilés locaux (reproductibles via flutter build)
+TDC-Studio.app/
+
+# Build caches & logs
+*.log
+.dart_tool/
+.packages
+build/
