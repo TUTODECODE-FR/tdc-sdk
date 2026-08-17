@@ -236,7 +236,7 @@ class _TDCSdkStudioScreenState extends State<TDCSdkStudioScreen> with SingleTick
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('1. Informations du Cours', style: TextStyle(color: Color(0xFFF5EBDA), fontSize: 16, FontWeight: FontWeight.bold)),
+          const Text('1. Informations du Cours', style: TextStyle(color: Color(0xFFF5EBDA), fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -277,7 +277,7 @@ class _TDCSdkStudioScreenState extends State<TDCSdkStudioScreen> with SingleTick
             },
           ),
           const SizedBox(height: 24),
-          const Text('2. Chapitres & Modules', style: TextStyle(color: Color(0xFFF5EBDA), fontSize: 16, FontWeight: FontWeight.bold)),
+          const Text('2. Chapitres & Modules', style: TextStyle(color: Color(0xFFF5EBDA), fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
           ..._modules.map((m) {
             return Card(
@@ -340,7 +340,7 @@ class _TDCSdkStudioScreenState extends State<TDCSdkStudioScreen> with SingleTick
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(_courseTitle, style: const TextStyle(color: Colors.white, fontSize: 20, FontWeight: FontWeight.bold)),
+                Text(_courseTitle, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 6),
                 Text(_courseDesc, style: const TextStyle(color: Colors.grey, fontSize: 14)),
               ],
@@ -351,11 +351,11 @@ class _TDCSdkStudioScreenState extends State<TDCSdkStudioScreen> with SingleTick
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(m['title'], style: const TextStyle(color: Color(0xFFF5EBDA), fontSize: 16, FontWeight: FontWeight.bold)),
+                Text(m['title'], style: const TextStyle(color: Color(0xFFF5EBDA), fontSize: 16, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 MarkdownBody(
                   data: m['content'],
-                  styleSheet: MarkdownStyleSheet.darkThemeStyleSheet(),
+                  styleSheet: MarkdownStyleSheet.fromTheme(ThemeData.dark()),
                 ),
                 const SizedBox(height: 16),
               ],
