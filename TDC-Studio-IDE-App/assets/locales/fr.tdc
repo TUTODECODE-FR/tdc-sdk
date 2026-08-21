@@ -1,0 +1,31 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (C) 2026 TUTODECODE Association <contact@tutodecode.org>
+// TUTODECODE UI Locale — format .tdc v2
+
+tdc-version: 2
+type: locale
+
+locale "fr" {
+  menu.home: "Accueil"
+  menu.tools: "Outils"
+  menu.cheat_sheets: "Cheat Sheets"
+  menu.netkit: "NetKit"
+  menu.ai_chat: "Ghost AI"
+  menu.settings: "Paramètres"
+  menu.roadmap: "Roadmap"
+  menu.lab: "T2C Lab"
+  menu.ghost_link: "Ghost Link"
+  menu.phantom: "T2C-Phantom"
+  menu.coming_soon: "Prochainement"
+  menu.phantom_coming_soon: "T2C-Phantom arrive bientôt — terminal pédagogique offline développé par l'association."
+  language.select_title: "Choisissez votre langue"
+  home.banner.title: "APPRENDRE.\nCONSTRUIRE.\nCOMPRENDRE."
+  home.banner.subtitle: "Comprendre l'informatique. Créer ses propres outils. Reprendre le contrôle."
+  home.banner.explore: "Explorer"
+  course.empty: "Aucun cours chargé"
+  quiz.correct: "Correct !"
+  quiz.incorrect: "Incorrect"
+  editor.saved: "Enregistré"
+  editor.unsaved: "Modifications non enregistrées"
+  editor.auto_save: "Sauvegarde automatique"
+}

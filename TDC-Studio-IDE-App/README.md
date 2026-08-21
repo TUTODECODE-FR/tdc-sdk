@@ -1,17 +1,30 @@
-# tdc_sdk
+# TDC Studio
 
-A new Flutter project.
+Application Flutter unifiée pour éditer les contenus TUTODECODE au format `.tdc`.
 
-## Getting Started
+## Modes
 
-This project is a starting point for a Flutter application.
+| Mode | Fichier | Public | Usage |
+|------|---------|--------|-------|
+| **Éditeur de Cours** | `lib/editorial_screen.dart` | Rédacteurs pédagogiques | Créer/modifier les cours, chapitres et QCM |
+| **Dev & Traduction** | `lib/app_studio_screen.dart` | Traducteurs / développeurs | Modifier les cheat sheets, traduire l’interface UI et exporter vers `assets/` |
 
-A few resources to get you started if this is your first Flutter project:
+Le point d’entrée unique est `lib/main.dart`. Il affiche un lanceur permettant de choisir le mode.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Lancer
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+cd TDC-Studio-IDE-App
+flutter pub get
+flutter run -d macos -t lib/main.dart
+```
+
+> Le projet est configuré pour macOS. Le code signing local est désactivé (`CODE_SIGNING_ALLOWED = NO`) pour permettre les builds de développement sans certificat Apple.
+
+## Architecture
+
+- `lib/main.dart` — Lanceur `TdcStudioApp` / `TdcStudioLauncherScreen`.
+- `lib/editorial_screen.dart` — `TdcEditorialScreen` (formulaire, éditeur .tdc, aperçu Markdown).
+- `lib/app_studio_screen.dart` — `TdcAppStudioScreen` (cheat sheets, locales UI, export assets).
+- `lib/onboarding_dialog.dart` — Dialogue d’accueil pour les nouveaux traducteurs.
+- `lib/tdc_import_parser.dart` — Parseur d’import `.tdc` (cours, cheat sheets, locales).

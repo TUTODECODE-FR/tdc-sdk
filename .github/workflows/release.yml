@@ -1,0 +1,159 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (C) 2026 TUTODECODE Association <contact@tutodecode.org>
+# Multi-OS builds for TDC Studio — offloaded from GitLab to save CI quotas.
+# Triggered by tag v* (mirrored from GitLab) or workflow_dispatch.
+
+name: Release & Build
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    working-directory: TDC-Studio-IDE-App
+
+jobs:
+  build-linux:
+    name: Build Linux Desktop
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Install Linux build deps
+        working-directory: .
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev
+
+      - run: flutter pub get
+      - run: flutter build linux --release
+      - name: Archive Linux bundle
+        run: |
+          tar -czvf ../TDC-Studio-Linux.tar.gz -C build/linux/x64/release/bundle/ .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-linux
+          path: TDC-Studio-Linux.tar.gz
+
+  build-windows:
+    name: Build Windows Desktop
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - run: flutter pub get
+      - run: flutter build windows --release
+      - name: Archive Windows release
+        shell: powershell
+        run: |
+          Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath ../TDC-Studio-Windows.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-windows
+          path: TDC-Studio-Windows.zip
+
+  build-macos:
+    name: Build macOS Desktop
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - run: flutter pub get
+      - run: flutter build macos --release
+      - name: Package DMG & ZIP
+        working-directory: .
+        run: |
+          chmod +x scripts/build_macos_dmg.sh
+          ./scripts/build_macos_dmg.sh
+          cp -f TDC-Studio-IDE-App/build/macos/Build/Products/Release/TDC-Studio-macOS.dmg TDC-Studio-macOS.dmg
+          ditto -c -k --keepParent \
+            "TDC-Studio-IDE-App/build/macos/Build/Products/Release/TDC Studio.app" \
+            TDC-Studio-macOS.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-macos
+          path: |
+            TDC-Studio-macOS.dmg
+            TDC-Studio-macOS.zip
+
+  publish-release:
+    name: Publish Multi-OS GitHub Release
+    needs: [build-linux, build-windows, build-macos]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: artifacts-linux
+          path: ./release_assets
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: artifacts-windows
+          path: ./release_assets
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: artifacts-macos
+          path: ./release_assets
+
+      - name: Generate SBOM
+        run: |
+          python3 scripts/generate_sbom.py
+          cp -f sbom-cyclonedx.json release_assets/
+          cp -f sbom-spdx.json release_assets/
+
+      - name: Flatten assets & SHA256SUMS
+        run: |
+          cd release_assets
+          find . -type f ! -name "SHA256SUMS.txt" -exec cp -f {} . \;
+          find . -mindepth 1 -type d -exec rm -rf {} +
+          sha256sum $(ls -1 | grep -v SHA256SUMS.txt) > SHA256SUMS.txt
+          ls -lh
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release_assets/*
+          name: TDC Studio ${{ github.ref_name }}
+          body: |
+            ## TDC Studio — Release ${{ github.ref_name }}
+
+            IDE officiel TUTODECODE Script (`.tdc`) — 100% local, sans cloud.
+
+            ### Binaires
+            - **Linux** : `TDC-Studio-Linux.tar.gz`
+            - **Windows** : `TDC-Studio-Windows.zip`
+            - **macOS** : `TDC-Studio-macOS.dmg` / `TDC-Studio-macOS.zip`
+
+            Builds offloaded to GitHub Actions (GitLab validate only) to save CI quotas.
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

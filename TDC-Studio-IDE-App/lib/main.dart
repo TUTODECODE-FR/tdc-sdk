@@ -1,24 +1,31 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Copyright (C) 2026 TUTODECODE Association <contact@tutodecode.org>
 // ============================================================
-// TDC SDK Desktop Studio IDE — Standalone Main
+// TDC Studio — Application unifiée
 // ============================================================
+import 'dart:io';
+
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
+
+import 'app_studio_screen.dart';
+import 'editorial_screen.dart';
+import 'services/recent_projects_service.dart';
+import 'tdc_parser_v2.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const TDCSdkApp());
+  runApp(const TdcStudioApp());
 }
 
-class TDCSdkApp extends StatelessWidget {
-  const TDCSdkApp({super.key});
+class TdcStudioApp extends StatelessWidget {
+  const TdcStudioApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'TDC Studio IDE v1.0 — Suite Développeur .TDC',
+      title: 'TDC Studio',
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: const Color(0xFF0A0A0A),
@@ -29,339 +36,422 @@ class TDCSdkApp extends StatelessWidget {
           surface: Color(0xFF141414),
         ),
       ),
-      home: const TDCSdkStudioScreen(),
+      home: const TdcStudioLauncherScreen(),
     );
   }
 }
 
-class TDCSdkStudioScreen extends StatefulWidget {
-  const TDCSdkStudioScreen({super.key});
+class TdcStudioLauncherScreen extends StatefulWidget {
+  const TdcStudioLauncherScreen({super.key});
 
   @override
-  State<TDCSdkStudioScreen> createState() => _TDCSdkStudioScreenState();
+  State<TdcStudioLauncherScreen> createState() => _TdcStudioLauncherScreenState();
 }
 
-class _TDCSdkStudioScreenState extends State<TDCSdkStudioScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  final TextEditingController _editorController = TextEditingController();
-
-  String _courseId = 'intro-linux';
-  String _courseTitle = 'Linux & Administration Système';
-  String _courseDesc = 'Maîtrisez les commandes réseau, les accès SSH et les droits fichiers.';
-  String _category = 'linux';
-  String _level = 'beginner';
-  String _duration = '2h';
-  String _icon = 'Terminal';
-
-  List<Map<String, dynamic>> _modules = [
-    {
-      'id': 'diag-prod',
-      'title': 'Chapitre 1 : Diagnostic système d\'urgence',
-      'duration': '15min',
-      'content': '# 🚨 Incident de Production\n\nVous êtes connecté en SSH sur un serveur distant.\nAuditez la mémoire et la charge processeur.',
-      'codeBlocks': [
-        {'language': 'bash', 'title': 'Audit mémoire & processeur', 'code': 'uptime\nfree -h\nps aux --sort=-%mem | head -n 10'}
-      ],
-      'quiz': [
-        {
-          'question': 'Quelle commande indique les processus les plus gourmands en mémoire ?',
-          'choices': ['ps aux --sort=-%mem', 'whoami', 'pwd'],
-          'correctIndex': 0,
-          'explanation': 'ps aux trié par %mem affiche les processus consommateurs de RAM.'
-        }
-      ]
-    }
-  ];
-
-  String _syntaxStatus = '✅ Syntaxe Valide';
-  bool _hasSyntaxError = false;
+class _TdcStudioLauncherScreenState extends State<TdcStudioLauncherScreen> {
+  List<RecentProject> _recents = [];
+  bool _loading = true;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-    _generateCodeFromForm();
+    _reload();
   }
 
-  @override
-  void dispose() {
-    _tabController.dispose();
-    _editorController.dispose();
-    super.dispose();
+  Future<void> _reload() async {
+    final list = await RecentProjectsService.load();
+    if (!mounted) return;
+    setState(() {
+      _recents = list;
+      _loading = false;
+    });
   }
 
-  void _generateCodeFromForm() {
-    final sb = StringBuffer();
-    sb.writeln('course "$_courseId" {');
-    sb.writeln('  title: "$_courseTitle"');
-    sb.writeln('  description: "$_courseDesc"');
-    sb.writeln('  category: $_category');
-    sb.writeln('  level: $_level');
-    sb.writeln('  duration: $_duration');
-    sb.writeln('  icon: $_icon');
-    sb.writeln('  keywords: [$_category, sysadmin, tdc]');
-    sb.writeln();
+  Future<void> _openEditorial({String? path, bool askHowToStart = true}) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => TdcEditorialScreen(
+          initialFilePath: path,
+          askHowToStart: askHowToStart && path == null,
+        ),
+      ),
+    );
+    await _reload();
+  }
 
-    for (final m in _modules) {
-      sb.writeln('  module "${m['id']}" {');
-      sb.writeln('    title: "${m['title']}"');
-      sb.writeln('    duration: ${m['duration']}');
-      sb.writeln();
-      sb.writeln('    content """');
-      sb.writeln(m['content']);
-      sb.writeln('    """');
-
-      final codeBlocks = (m['codeBlocks'] as List?) ?? [];
-      for (final cb in codeBlocks) {
-        sb.writeln();
-        sb.writeln('    codeblock "${cb['language']}" {');
-        sb.writeln('      title: "${cb['title']}"');
-        sb.writeln('      code """');
-        sb.writeln(cb['code']);
-        sb.writeln('      """');
-        sb.writeln('    }');
+  Future<void> _openFilePicker() async {
+    final file = await openFile(acceptedTypeGroups: [
+      const XTypeGroup(label: 'TDC', extensions: ['tdc']),
+    ]);
+    if (file == null || !mounted) return;
+    try {
+      final text = await File(file.path).readAsString();
+      final resource = TdcParserV2.parse(text);
+      if (resource.type == 'course') {
+        await _openEditorial(path: file.path);
+        return;
       }
-
-      final quiz = (m['quiz'] as List?) ?? [];
-      if (quiz.isNotEmpty) {
-        sb.writeln();
-        sb.writeln('    quiz {');
-        for (final q in quiz) {
-          sb.writeln('      question "${q['question']}" {');
-          final choices = (q['choices'] as List?) ?? [];
-          final correct = q['correctIndex'] as int? ?? 0;
-          for (int i = 0; i < choices.length; i++) {
-            final prefix = (i == correct) ? '+' : '-';
-            sb.writeln('        $prefix "${choices[i]}"');
-          }
-          if (q['explanation'] != null) {
-            sb.writeln('        explanation: "${q['explanation']}"');
-          }
-          sb.writeln('      }');
-        }
-        sb.writeln('    }');
-      }
-
-      sb.writeln('  }');
-      sb.writeln();
+      // Non-course → Dev & Traduction
+      if (!mounted) return;
+      await Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const TdcAppStudioScreen()),
+      );
+      await _reload();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Impossible d\'ouvrir : $e')),
+      );
     }
-
-    sb.writeln('}');
-    _editorController.text = sb.toString();
-    _validateSyntax(sb.toString());
   }
 
-  void _validateSyntax(String code) {
-    if (code.contains('course ') && code.contains('module ') && code.contains('{')) {
-      setState(() {
-        _syntaxStatus = '✅ Syntaxe .TDC Valide';
-        _hasSyntaxError = false;
-      });
-    } else {
-      setState(() {
-        _syntaxStatus = '❌ Erreur de Syntaxe : Bloc course ou module manquant';
-        _hasSyntaxError = true;
-      });
+  Future<void> _removeRecent(RecentProject p) async {
+    await RecentProjectsService.remove(p.path);
+    await _reload();
+  }
+
+  Future<void> _revealInFinder(String path) async {
+    try {
+      await Process.run('open', ['-R', path]);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(path)),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF141414),
-        elevation: 0,
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF5EBDA).withOpacity(0.15),
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: const Color(0xFFF5EBDA).withOpacity(0.4)),
-              ),
-              child: const Text(
-                'TUTODECODE Studio IDE',
-                style: TextStyle(color: Color(0xFFF5EBDA), fontWeight: FontWeight.bold, fontSize: 14),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Text(
-              _syntaxStatus,
-              style: TextStyle(
-                color: _hasSyntaxError ? Colors.redAccent : Colors.greenAccent,
-                fontSize: 12,
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.keyO, meta: true): _openFilePicker,
+        const SingleActivator(LogicalKeyboardKey.keyO, control: true): _openFilePicker,
+        const SingleActivator(LogicalKeyboardKey.keyN, meta: true): () => _openEditorial(),
+        const SingleActivator(LogicalKeyboardKey.keyN, control: true): () => _openEditorial(),
+      },
+      child: Focus(
+        autofocus: true,
+        child: Scaffold(
+          body: Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF0A0A0A), Color(0xFF141414)],
               ),
             ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.copy, color: Color(0xFFF5EBDA)),
-            tooltip: 'Copier le code .TDC',
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: _editorController.text));
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Code .TDC copié dans le presse-papier !')),
-              );
-            },
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 880),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF5EBDA).withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                  color: const Color(0xFFF5EBDA).withValues(alpha: 0.4)),
+                            ),
+                            child: const Text(
+                              'TDC Studio',
+                              style: TextStyle(
+                                color: Color(0xFFF5EBDA),
+                                fontSize: 26,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                          ),
+                          const Spacer(),
+                          Text(
+                            'v${_versionLabel()}',
+                            style: const TextStyle(color: Colors.white24, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'IDE de création de contenu TUTODECODE',
+                        style: TextStyle(color: Colors.grey, fontSize: 14),
+                      ),
+                      const SizedBox(height: 32),
+                      const Text(
+                        'PROJETS RÉCENTS',
+                        style: TextStyle(
+                          color: Colors.white54,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.1,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      if (_loading)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          child: LinearProgressIndicator(
+                            color: Color(0xFFF5EBDA),
+                            backgroundColor: Color(0xFF2A2A2A),
+                          ),
+                        )
+                      else if (_recents.isEmpty)
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF141414),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFF2A2A2A)),
+                          ),
+                          child: const Text(
+                            'Aucun projet récent — créez un cours ou ouvrez un fichier .tdc.',
+                            style: TextStyle(color: Colors.grey, fontSize: 13),
+                          ),
+                        )
+                      else
+                        ..._recents.map(_buildRecentTile),
+                      const SizedBox(height: 32),
+                      const Text(
+                        'CRÉER',
+                        style: TextStyle(
+                          color: Colors.white54,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.1,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _ModeCard(
+                              icon: Icons.menu_book,
+                              title: 'Éditeur de Cours',
+                              subtitle:
+                                  'Import .tdc, from scratch ou template — quiz, sync, coloration',
+                              onTap: () => _openEditorial(),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _ModeCard(
+                              icon: Icons.translate,
+                              title: 'Dev & Traduction',
+                              subtitle: 'Cheat sheets, locales UI et export assets (.tdc v2)',
+                              onTap: () async {
+                                await Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const TdcAppStudioScreen(),
+                                  ),
+                                );
+                                await _reload();
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 28),
+                      const Text(
+                        'OUVRIR',
+                        style: TextStyle(
+                          color: Colors.white54,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.1,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          OutlinedButton.icon(
+                            onPressed: () => _openEditorial(),
+                            icon: const Icon(Icons.add),
+                            label: const Text('Nouveau cours'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFFF5EBDA),
+                              side: const BorderSide(color: Color(0xFFF5EBDA)),
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          OutlinedButton.icon(
+                            onPressed: _openFilePicker,
+                            icon: const Icon(Icons.folder_open),
+                            label: const Text('Ouvrir fichier (Ctrl+O)'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.white70,
+                              side: const BorderSide(color: Color(0xFF2A2A2A)),
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
-        ],
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: const Color(0xFFF5EBDA),
-          labelColor: const Color(0xFFF5EBDA),
-          unselectedLabelColor: Colors.grey,
-          tabs: const [
-            Tab(icon: Icon(Icons.edit_note), text: 'Formulaire Studio'),
-            Tab(icon: Icon(Icons.code), text: 'Éditeur .TDC'),
-            Tab(icon: Icon(Icons.remove_red_eye), text: 'Aperçu Direct'),
-          ],
         ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildFormTab(),
-          _buildCodeEditorTab(),
-          _buildPreviewTab(),
-        ],
       ),
     );
   }
 
-  Widget _buildFormTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('1. Informations du Cours', style: TextStyle(color: Color(0xFFF5EBDA), fontSize: 16, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 12),
-          Row(
+  String _versionLabel() {
+    // Keep in sync with pubspec version when bumping.
+    return '2.0.0';
+  }
+
+  Widget _buildRecentTile(RecentProject p) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Material(
+        color: const Color(0xFF141414),
+        borderRadius: BorderRadius.circular(10),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: () {
+            if (p.type == 'course') {
+              _openEditorial(path: p.path);
+            } else {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const TdcAppStudioScreen()),
+              );
+            }
+          },
+          onSecondaryTapDown: (details) {
+            showMenu(
+              context: context,
+              position: RelativeRect.fromLTRB(
+                details.globalPosition.dx,
+                details.globalPosition.dy,
+                details.globalPosition.dx,
+                details.globalPosition.dy,
+              ),
+              color: const Color(0xFF1E1E1E),
+              items: [
+                PopupMenuItem(
+                  onTap: () => _openEditorial(path: p.path),
+                  child: const Text('Ouvrir'),
+                ),
+                PopupMenuItem(
+                  onTap: () => Future.microtask(() => _revealInFinder(p.path)),
+                  child: const Text('Révéler dans le Finder'),
+                ),
+                PopupMenuItem(
+                  onTap: () => Future.microtask(() => _removeRecent(p)),
+                  child: const Text('Retirer de la liste'),
+                ),
+              ],
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFF2A2A2A)),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  p.type == 'course' ? Icons.menu_book : Icons.description,
+                  color: const Color(0xFFF5EBDA),
+                  size: 22,
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        p.title.isEmpty ? p.id : p.title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        [
+                          if (p.category.isNotEmpty) p.category,
+                          p.id,
+                          p.path,
+                        ].join(' · '),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(color: Colors.grey, fontSize: 11),
+                      ),
+                    ],
+                  ),
+                ),
+                Text(
+                  p.relativeTime,
+                  style: const TextStyle(color: Colors.white38, fontSize: 11),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ModeCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const _ModeCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(22),
+          decoration: BoxDecoration(
+            color: const Color(0xFF141414),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFF5EBDA).withValues(alpha: 0.3)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: TextFormField(
-                  initialValue: _courseId,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(labelText: 'ID du Cours', border: OutlineInputBorder()),
-                  onChanged: (v) {
-                    _courseId = v;
-                    _generateCodeFromForm();
-                  },
+              Icon(icon, color: const Color(0xFFF5EBDA), size: 36),
+              const SizedBox(height: 16),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Color(0xFFF5EBDA),
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: TextFormField(
-                  initialValue: _courseTitle,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(labelText: 'Titre du Cours', border: OutlineInputBorder()),
-                  onChanged: (v) {
-                    _courseTitle = v;
-                    _generateCodeFromForm();
-                  },
-                ),
+              const SizedBox(height: 8),
+              Text(
+                subtitle,
+                style: const TextStyle(color: Colors.grey, fontSize: 12, height: 1.4),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          TextFormField(
-            initialValue: _courseDesc,
-            maxLines: 2,
-            style: const TextStyle(color: Colors.white),
-            decoration: const InputDecoration(labelText: 'Description Pédagogique', border: OutlineInputBorder()),
-            onChanged: (v) {
-              _courseDesc = v;
-              _generateCodeFromForm();
-            },
-          ),
-          const SizedBox(height: 24),
-          const Text('2. Chapitres & Modules', style: TextStyle(color: Color(0xFFF5EBDA), fontSize: 16, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 12),
-          ..._modules.map((m) {
-            return Card(
-              color: const Color(0xFF1E1E1E),
-              margin: const EdgeInsets.only(bottom: 12),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(m['title'], style: const TextStyle(color: Color(0xFFF5EBDA), fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      initialValue: m['content'],
-                      maxLines: 3,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: const InputDecoration(labelText: 'Contenu Markdown', border: OutlineInputBorder()),
-                      onChanged: (v) {
-                        m['content'] = v;
-                        _generateCodeFromForm();
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }).toList(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCodeEditorTab() {
-    return Container(
-      color: const Color(0xFF050505),
-      padding: const EdgeInsets.all(16),
-      child: TextField(
-        controller: _editorController,
-        maxLines: null,
-        style: const TextStyle(fontFamily: 'monospace', color: Color(0xFFF5EBDA), fontSize: 14, height: 1.5),
-        decoration: const InputDecoration(border: InputBorder.none),
-        onChanged: _validateSyntax,
-      ),
-    );
-  }
-
-  Widget _buildPreviewTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1E1E1E),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFF5EBDA).withOpacity(0.3)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(_courseTitle, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 6),
-                Text(_courseDesc, style: const TextStyle(color: Colors.grey, fontSize: 14)),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          ..._modules.map((m) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(m['title'], style: const TextStyle(color: Color(0xFFF5EBDA), fontSize: 16, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                MarkdownBody(
-                  data: m['content'],
-                  styleSheet: MarkdownStyleSheet.fromTheme(ThemeData.dark()),
-                ),
-                const SizedBox(height: 16),
-              ],
-            );
-          }).toList(),
-        ],
+        ),
       ),
     );
   }
