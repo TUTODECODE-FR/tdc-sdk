@@ -345,13 +345,20 @@ build_android_test:
       when: on_success
 
 # === STAGE: AUTO-TAG (main → vX.Y.Z.N) ===
-# Creates the next patch tag via GitLab API (git push with CI_JOB_TOKEN is often denied).
-# Prefer CI variable PROJECT_ACCESS_TOKEN (api + write_repository). Falls back to CI_JOB_TOKEN.
+# Requires CI variable PROJECT_ACCESS_TOKEN (scopes: api, write_repository).
+# Without it, the job skips green — create tags manually or add the token.
 auto_tag:
   stage: sync-os-builds
   image: alpine:latest
   script:
     - apk add --no-cache git curl
+    - |
+      if [ -z "${PROJECT_ACCESS_TOKEN:-}" ]; then
+        echo "⏭️ PROJECT_ACCESS_TOKEN unset — skip auto_tag (keeps main green)."
+        echo "Add a Project Access Token (api + write_repository) as masked CI variable,"
+        echo "or tag manually: git tag -a vX.Y.Z.N && git push origin vX.Y.Z.N"
+        exit 0
+      fi
     - git config --global --add safe.directory "$CI_PROJECT_DIR"
     - git fetch --tags origin || true
     - VERSION_LINE=$(grep '^version:' "$STUDIO_DIR/pubspec.yaml")
@@ -369,17 +376,11 @@ auto_tag:
       echo "Next tag $NEXT_TAG"
       echo "NEXT_TAG=$NEXT_TAG" >> auto_tag.env
     - |
-      if [ -n "${PROJECT_ACCESS_TOKEN:-}" ]; then
-        AUTH_HEADER="PRIVATE-TOKEN: ${PROJECT_ACCESS_TOKEN}"
-        echo "Auth: PROJECT_ACCESS_TOKEN"
-      else
-        AUTH_HEADER="JOB-TOKEN: ${CI_JOB_TOKEN}"
-        echo "Auth: CI_JOB_TOKEN (set PROJECT_ACCESS_TOKEN with api+write_repository if this fails)"
-      fi
-      # Idempotent: already tagged → success
+      AUTH_HEADER="PRIVATE-TOKEN: ${PROJECT_ACCESS_TOKEN}"
+      ENC_TAG=$(echo -n "$NEXT_TAG" | sed 's/\./%2E/g')
       CODE=$(curl -sS -o /tmp/tag_get.json -w "%{http_code}" \
         --header "$AUTH_HEADER" \
-        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/repository/tags/$(echo -n "$NEXT_TAG" | sed 's/\./%2E/g')")
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/repository/tags/${ENC_TAG}")
       if [ "$CODE" = "200" ]; then
         echo "✅ Tag $NEXT_TAG already exists"
         exit 0
@@ -394,9 +395,7 @@ auto_tag:
       echo "Create tag HTTP $HTTP"
       cat /tmp/tag_create.json || true
       if [ "$HTTP" != "201" ]; then
-        echo "❌ Failed to create tag $NEXT_TAG"
-        echo "Fix: Settings → CI/CD → Variables → PROJECT_ACCESS_TOKEN (api, write_repository)"
-        echo "Also ensure tag pattern is not protected against the token role."
+        echo "❌ Failed to create tag $NEXT_TAG (HTTP $HTTP)"
         exit 1
       fi
       echo "✅ Created $NEXT_TAG on $CI_COMMIT_SHA"
@@ -404,6 +403,7 @@ auto_tag:
     reports:
       dotenv: auto_tag.env
     expire_in: 1 week
+    when: always
   rules:
     - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE != "schedule"
       when: on_success
