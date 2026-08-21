@@ -12,3 +12,6 @@ TDC-Studio.app/
 .dart_tool/
 .packages
 build/
+
+# Generated SBOM artifacts
+sbom-*.json
