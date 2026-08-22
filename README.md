@@ -31,7 +31,7 @@ Le **TDC-SDK** est la suite d'outils et de spécifications formelles dédiée à
 
 ## 💻 Comment utiliser l'extension VS Code (Sans utiliser l'application Studio)
 
-Si vous préférez rédiger vos cours directement dans **Visual Studio Code**, **Cursor** ou **VSCodium** sans ouvrir l'IDE visuel, l'extension officielle vous offre une coloration syntaxique complète, des snippets d'autocomplétion et le formatage de vos fichiers `.tdc`.
+Si vous préférez rédiger vos cours directement dans **Visual Studio Code** ou **VSCodium** sans ouvrir l'IDE visuel, l'extension officielle vous offre une coloration syntaxique complète, des snippets d'autocomplétion et le formatage de vos fichiers `.tdc`.
 
 ### Méthode 1 : Installation en 2 clics via l'interface graphique de VS Code (Recommandé)
 
@@ -53,9 +53,9 @@ Si la commande `code` est disponible dans votre terminal :
 code --install-extension vscode-tdc/vscode-tdc-language-1.0.0.vsix
 ```
 
-*Pour Cursor :*
+*Pour VSCodium :*
 ```bash
-cursor --install-extension vscode-tdc/vscode-tdc-language-1.0.0.vsix
+codium --install-extension vscode-tdc/vscode-tdc-language-1.0.0.vsix
 ```
 
 ---
