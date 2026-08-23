@@ -1,6 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0-only
 # Copyright (C) 2026 TUTODECODE Association <contact@tutodecode.org>
-# CI TDC-SDK / TDC Studio v2.0.0 — validate parity with T2DECODE
+# CI TDC-SDK / TDC Studio v2.0.0
+#
+# Trois types de pipeline (zéro build multi-OS sur GitLab — GitHub Actions uniquement) :
+#   1. MR (merge_request_event) → stage validate uniquement
+#   2. main (push après merge MR) → auto_tag uniquement (~1 min Alpine)
+#   3. tag v* → mirror_tag_to_github → sync_github_multi_os_builds → release_gitlab
+# Voir docs/ci-github-mirror.md
 
 image: ghcr.io/cirruslabs/flutter:stable
 
@@ -13,6 +19,14 @@ variables:
 
 default:
   interruptible: false
+
+# Pas de pipeline sur les branches feature (économie quotas) — seulement MR, main et tags.
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_TAG
+    - when: never
 
 stages:
   - validate
@@ -78,8 +92,6 @@ test_and_analyze:
       fi
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: on_success
-    - if: '$CI_COMMIT_BRANCH == "main"'
       when: on_success
 
 airgap_leak_canary:
@@ -324,25 +336,24 @@ military_hardening_audit:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: on_success
 
-# === STAGE: BUILD-TEST (light / manual — heavy builds on GitHub) ===
-# Saves GitLab shared-runner minutes: multi-OS release builds run on GitHub Actions.
+# === STAGE: BUILD-TEST (manual only — multi-OS builds on GitHub Actions) ===
+# Jamais déclenché sur MR ni sur main/tag : zéro quota GitLab pour flutter build linux/windows/macos.
 build_linux_test:
   stage: build-test
   script:
     - echo "⏭️ Linux release build offloaded to GitHub Actions (.github/workflows/release.yml)."
-    - echo "Run manually only if you need a GitLab-side smoke build."
     - cd "$STUDIO_DIR" && flutter pub get && flutter test
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: on_success
+    - when: manual
+      allow_failure: true
 
 build_android_test:
   stage: build-test
   script:
     - echo "✅ TDC Studio is desktop-first — no Android APK in release pipeline."
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: on_success
+    - when: manual
+      allow_failure: true
 
 # === STAGE: AUTO-TAG (main → vX.Y.Z.N) ===
 # Requires CI variable PROJECT_ACCESS_TOKEN (scopes: api, write_repository).
@@ -405,7 +416,7 @@ auto_tag:
     expire_in: 1 week
     when: always
   rules:
-    - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE != "schedule"
+    - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"
       when: on_success
 
 # === STAGE: SYNC — GitLab tag → GitHub mirror → Actions builds → pull assets ===
@@ -463,7 +474,6 @@ sync_github_multi_os_builds:
   rules:
     - if: $CI_COMMIT_TAG
       when: on_success
-    - when: manual
 
 release_gitlab:
   stage: release

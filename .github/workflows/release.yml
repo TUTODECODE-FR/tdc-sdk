@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-only
 # Copyright (C) 2026 TUTODECODE Association <contact@tutodecode.org>
 # Multi-OS builds for TDC Studio — offloaded from GitLab to save CI quotas.
-# Triggered by tag v* (mirrored from GitLab) or workflow_dispatch.
+# Triggered automatically when GitLab mirror_tag_to_github pushes tag v* (post-MR merge).
+# Manual fallback: workflow_dispatch.
 
 name: Release & Build
 
