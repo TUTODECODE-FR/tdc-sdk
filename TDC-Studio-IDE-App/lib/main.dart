@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import 'app_studio_screen.dart';
 import 'editorial_screen.dart';
@@ -51,6 +52,7 @@ class TdcStudioLauncherScreen extends StatefulWidget {
 class _TdcStudioLauncherScreenState extends State<TdcStudioLauncherScreen> {
   List<RecentProject> _recents = [];
   bool _loading = true;
+  String _appVersion = '…';
 
   @override
   void initState() {
@@ -59,10 +61,14 @@ class _TdcStudioLauncherScreenState extends State<TdcStudioLauncherScreen> {
   }
 
   Future<void> _reload() async {
-    final list = await RecentProjectsService.load();
+    final results = await Future.wait([
+      RecentProjectsService.load(),
+      PackageInfo.fromPlatform(),
+    ]);
     if (!mounted) return;
     setState(() {
-      _recents = list;
+      _recents = results[0] as List<RecentProject>;
+      _appVersion = (results[1] as PackageInfo).version;
       _loading = false;
     });
   }
@@ -172,7 +178,7 @@ class _TdcStudioLauncherScreenState extends State<TdcStudioLauncherScreen> {
                           ),
                           const Spacer(),
                           Text(
-                            'v${_versionLabel()}',
+                            'v$_appVersion',
                             style: const TextStyle(color: Colors.white24, fontSize: 12),
                           ),
                         ],
@@ -302,11 +308,6 @@ class _TdcStudioLauncherScreenState extends State<TdcStudioLauncherScreen> {
         ),
       ),
     );
-  }
-
-  String _versionLabel() {
-    // Keep in sync with pubspec version when bumping.
-    return '2.0.0';
   }
 
   Widget _buildRecentTile(RecentProject p) {
