@@ -6,8 +6,10 @@ Ce fichier est la **source de vérité** pour savoir qui travaille sur quoi. Les
 
 ## Comment ça marche
 
+**Via l'app TDC Studio** → lanceur → **Hub Communauté** (ou **Paramètres → Communauté / Bénévolat**) : tu peux prendre une tâche (« Je m'en occupe »), proposer une idée ou signaler un bug. L'app parle à l'API GitLab (jeton personnel scope `api`) et s'appuie sur ce fichier comme source de vérité.
+
 1. **Choisir** une tâche dont le statut est `Libre`.
-2. **Réclamer** : ouvrir une MR qui **ne fait que** remplir **Pris par** avec `@username` et passer le statut à `En cours`.
+2. **Réclamer** : depuis le Hub (recommandé) ou ouvrir une MR qui **ne fait que** remplir **Pris par** avec `@username` et passer le statut à `En cours`.
 3. **Travailler** sur une branche dédiée (commits avec **DCO** : `Signed-off-by: Prénom NOM <email>`).
 4. **Livrer** : au merge, passer le statut à `Fait` et mettre le lien de la MR dans **MR / Lien**.
 
