@@ -2,6 +2,19 @@
 
 TDC-SDK est la suite d’outils officielle du langage **TUTODECODE Script (`.tdc`)**.
 
+## Tableau des bénévoles (source de vérité)
+
+**Avant d’ouvrir une issue ou de coder au hasard**, consulte et mets à jour le cahier des charges vivant :
+
+👉 **[VOLUNTEER_BOARD.md](./VOLUNTEER_BOARD.md)** — backlog des améliorations, statut, et colonne **Pris par** (ton pseudo GitLab/GitHub).
+
+- Une tâche libre → tu l’inscris à ton nom (`En cours`) via une MR.
+- Une tâche = une Merge Request, avec **DCO** (`Signed-off-by`).
+- Tu abandonnes → tu retires ton pseudo pour libérer la ligne.
+- Contact : [contact@tutodecode.org](mailto:contact@tutodecode.org)
+
+Les issues GitLab restent utiles pour discuter un point précis, mais **le board est la référence** pour savoir qui fait quoi.
+
 ## Deux profils de contributeurs
 
 ### 1. Rédacteur pédagogique (cours, QCM)

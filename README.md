@@ -208,6 +208,12 @@ Ansible permet l'automatisation sans agent (*agentless*) via OpenSSH.
 
 ---
 
+## 🤝 Contribuer
+
+Les bénévoles choisissent une tâche sur le **[tableau des contributions](./VOLUNTEER_BOARD.md)** (cahier des charges vivant : statut + colonne « Pris par »), puis ouvrent une MR avec DCO. Voir aussi [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+---
+
 ## 💖 Soutenir le projet TUTODECODE
 
 **TUTODECODE** est une association à but non lucratif dédiée au logiciel libre, à l'éducation souveraine et à la transmission du savoir technique sans traçage ni publicité.
