@@ -28,3 +28,9 @@ flutter run -d macos -t lib/main.dart
 - `lib/app_studio_screen.dart` — `TdcAppStudioScreen` (cheat sheets, locales UI, export assets).
 - `lib/onboarding_dialog.dart` — Dialogue d’accueil pour les nouveaux traducteurs.
 - `lib/tdc_import_parser.dart` — Parseur d’import `.tdc` (cours, cheat sheets, locales).
+- `lib/screens/volunteer_hub_screen.dart` — Hub Communauté : lecture du tableau d’idées, proposer une idée, signaler un bug (pas de réservation de tâche).
+- `lib/screens/community_settings_screen.dart` — Liens GitLab + jeton optionnel pour idée/bug.
+
+## Hub Communauté
+
+Depuis le lanceur : **Hub Communauté** pour parcourir [VOLUNTEER_BOARD.md](../VOLUNTEER_BOARD.md), proposer une idée ou signaler un bug. Le jeton GitLab (scope `api`) n’est requis que pour ces envois. Pour contribuer du code : MR classique avec DCO (voir [CONTRIBUTING.md](../CONTRIBUTING.md)).

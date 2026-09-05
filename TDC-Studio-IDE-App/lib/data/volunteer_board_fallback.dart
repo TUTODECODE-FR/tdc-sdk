@@ -7,7 +7,7 @@ const volunteerBoardFallbackMarkdown = '''
 
 ## Backlog
 
-| ID | Statut | Priorité | Titre | Description courte | Compétences | Pris par | MR / Lien |
+| ID | Statut | Priorité | Titre | Description courte | Compétences | Note | MR / Lien |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | TDC-001 | Libre | P1 | Mettre à jour CONTRIBUTING (lanceur unifié) | Aligner CONTRIBUTING.md sur le lanceur TDC Studio v2. | Markdown, produit | — | — |
 | TDC-002 | Libre | P1 | Guide pas-à-pas Studio → export → MR | Tutoriel court : créer/importer un `.tdc`, exporter, ouvrir une MR. | Rédaction, Git | — | — |

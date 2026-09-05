@@ -9,7 +9,7 @@ import '../services/gitlab_volunteer_service.dart';
 import '../services/open_url.dart';
 import 'community_settings_screen.dart';
 
-/// Hub d'entraide : tâches, propositions, bugs — langage communautaire.
+/// Hub d'entraide : tableau en lecture, propositions, bugs.
 class VolunteerHubScreen extends StatefulWidget {
   const VolunteerHubScreen({super.key});
 
@@ -23,7 +23,6 @@ class _VolunteerHubScreenState extends State<VolunteerHubScreen> {
   bool _fromNetwork = false;
   String? _banner;
   String? _filter; // null = tous
-  String? _username;
   bool _hasPat = false;
 
   static const _beige = Color(0xFFF5EBDA);
@@ -40,12 +39,10 @@ class _VolunteerHubScreenState extends State<VolunteerHubScreen> {
   Future<void> _reload() async {
     setState(() => _loading = true);
     final pat = await CommunitySettingsService.getPat();
-    final user = await CommunitySettingsService.getUsername();
     final result = await GitlabVolunteerService.loadBoard();
     if (!mounted) return;
     setState(() {
       _hasPat = pat != null;
-      _username = user;
       _tasks = result.tasks;
       _fromNetwork = result.fromNetwork;
       _banner = result.error;
@@ -60,7 +57,7 @@ class _VolunteerHubScreenState extends State<VolunteerHubScreen> {
         case 'libre':
           return t.isLibre;
         case 'cours':
-          return t.isEnCours || t.pendingValidation;
+          return t.isEnCours;
         case 'fait':
           return t.isFait;
         default:
@@ -86,9 +83,9 @@ class _VolunteerHubScreenState extends State<VolunteerHubScreen> {
           style: TextStyle(color: _beige),
         ),
         content: const Text(
-          'Pour participer, ajoute ton jeton GitLab (scope api) dans '
-          'Paramètres → Communauté.\n\n'
-          'Sans jeton, on ne peut pas enregistrer ta contribution sur GitLab.',
+          'Pour proposer une idée ou signaler un bug, ajoute ton jeton '
+          'GitLab (scope api) dans Paramètres → Communauté.\n\n'
+          'La lecture du tableau reste possible sans jeton.',
           style: TextStyle(color: Colors.white70, height: 1.4),
         ),
         actions: [
@@ -106,144 +103,6 @@ class _VolunteerHubScreenState extends State<VolunteerHubScreen> {
               foregroundColor: Colors.black,
             ),
             child: const Text('Ouvrir les réglages'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _needUsernameDialog() async {
-    await showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: _surface,
-        title: const Text(
-          'Pseudo GitLab requis',
-          style: TextStyle(color: _beige),
-        ),
-        content: const Text(
-          'Pour prendre une tâche, indique ton pseudo GitLab dans '
-          'Paramètres → Communauté (il sera affiché sur le tableau).',
-          style: TextStyle(color: Colors.white70, height: 1.4),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Plus tard', style: TextStyle(color: Colors.white54)),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _openCommunitySettings();
-            },
-            style: FilledButton.styleFrom(
-              backgroundColor: _beige,
-              foregroundColor: Colors.black,
-            ),
-            child: const Text('Ouvrir les réglages'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _claim(VolunteerTask task) async {
-    if (!_hasPat) {
-      await _needPatDialog();
-      return;
-    }
-    if (_username == null || _username!.trim().isEmpty) {
-      await _needUsernameDialog();
-      return;
-    }
-
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: _surface,
-        title: Text(
-          'Tu t\'occupes de ${task.id} ?',
-          style: const TextStyle(color: _beige),
-        ),
-        content: Text(
-          '« ${task.title} »\n\n'
-          'On prévient la communauté : ton pseudo sera visible, '
-          'et les autres sauront que c\'est pris. '
-          'Une proposition sera envoyée pour validation.',
-          style: const TextStyle(color: Colors.white70, height: 1.4),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Annuler', style: TextStyle(color: Colors.white54)),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: _gold,
-              foregroundColor: Colors.black,
-            ),
-            child: const Text('Je m\'en occupe'),
-          ),
-        ],
-      ),
-    );
-    if (confirm != true || !mounted) return;
-
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const Center(
-        child: CircularProgressIndicator(color: _beige),
-      ),
-    );
-
-    final result = await GitlabVolunteerService.claimTask(task);
-    if (!mounted) return;
-    Navigator.of(context).pop(); // loader
-
-    if (result.ok) {
-      setState(() {
-        _tasks = _tasks.map((t) {
-          if (t.id != task.id) return t;
-          return t.copyWith(
-            status: 'En cours',
-            takenBy: '@${result.username ?? _username ?? 'toi'}',
-            link: result.webUrl ?? t.link,
-            pendingValidation: true,
-          );
-        }).toList();
-      });
-    }
-
-    await showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: _surface,
-        title: Text(
-          result.ok ? 'Merci !' : 'Pas encore…',
-          style: TextStyle(color: result.ok ? _gold : const Color(0xFFEF4444)),
-        ),
-        content: Text(
-          result.message,
-          style: const TextStyle(color: Colors.white70, height: 1.4),
-        ),
-        actions: [
-          if (result.webUrl != null)
-            TextButton(
-              onPressed: () {
-                openExternalUrl(result.webUrl!);
-                Navigator.pop(ctx);
-              },
-              child: const Text('Voir sur GitLab', style: TextStyle(color: _beige)),
-            ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx),
-            style: FilledButton.styleFrom(
-              backgroundColor: _beige,
-              foregroundColor: Colors.black,
-            ),
-            child: const Text('OK'),
           ),
         ],
       ),
@@ -400,7 +259,6 @@ class _VolunteerHubScreenState extends State<VolunteerHubScreen> {
                         itemCount: _filtered.length,
                         itemBuilder: (_, i) => _TaskCard(
                           task: _filtered[i],
-                          onClaim: () => _claim(_filtered[i]),
                           onOpenLink: () async {
                             final link = _filtered[i].link;
                             if (link.isNotEmpty &&
@@ -422,7 +280,6 @@ class _VolunteerHubScreenState extends State<VolunteerHubScreen> {
   }
 
   Widget _buildHero() {
-    final who = _username != null ? '@$_username' : 'toi';
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.fromLTRB(20, 16, 20, 0),
@@ -451,8 +308,9 @@ class _VolunteerHubScreenState extends State<VolunteerHubScreen> {
           const SizedBox(height: 6),
           Text(
             _fromNetwork
-                ? 'Voici ce qui est libre, pris, ou terminé. '
-                    'Prends une tâche si tu peux aider — $who es le bienvenu·e.'
+                ? 'Wishlist des idées ouvertes. Consulte le tableau, '
+                    'propose une idée ou signale un bug. Pour coder : '
+                    'branche + MR classique (voir CONTRIBUTING).'
                 : 'Aperçu hors ligne. Connecte-toi pour voir le tableau à jour.',
             style: const TextStyle(color: Colors.white70, height: 1.35, fontSize: 13),
           ),
@@ -508,7 +366,7 @@ class _VolunteerHubScreenState extends State<VolunteerHubScreen> {
             },
             icon: const Icon(Icons.open_in_new, size: 16, color: Colors.white54),
             label: const Text(
-              'Aider / voir le tableau',
+              'Voir le tableau sur GitLab',
               style: TextStyle(color: Colors.white54),
             ),
           ),
@@ -552,12 +410,10 @@ class _VolunteerHubScreenState extends State<VolunteerHubScreen> {
 
 class _TaskCard extends StatelessWidget {
   final VolunteerTask task;
-  final VoidCallback onClaim;
   final VoidCallback onOpenLink;
 
   const _TaskCard({
     required this.task,
-    required this.onClaim,
     required this.onOpenLink,
   });
 
@@ -565,17 +421,11 @@ class _TaskCard extends StatelessWidget {
   static const _gold = Color(0xFFD4AF37);
 
   Color get _statusColor {
-    if (task.pendingValidation) return _gold;
     if (task.isLibre) return const Color(0xFF10B981);
     if (task.isEnCours) return _gold;
     if (task.isFait) return Colors.white54;
     if (task.isBloque) return const Color(0xFFEF4444);
     return Colors.white54;
-  }
-
-  String get _statusLabel {
-    if (task.pendingValidation) return 'En attente validation';
-    return task.status;
   }
 
   @override
@@ -614,7 +464,7 @@ class _TaskCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  _statusLabel,
+                  task.status,
                   style: TextStyle(color: _statusColor, fontSize: 11),
                 ),
               ),
@@ -661,36 +511,22 @@ class _TaskCard extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              if (task.isLibre && !task.pendingValidation)
-                FilledButton(
-                  onPressed: onClaim,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: _gold,
-                    foregroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 10,
-                    ),
-                  ),
-                  child: const Text('Je m\'en occupe'),
+              TextButton.icon(
+                onPressed: onOpenLink,
+                icon: const Icon(Icons.open_in_new, size: 16, color: _beige),
+                label: const Text(
+                  'Voir sur GitLab',
+                  style: TextStyle(color: _beige),
                 ),
-              if (!task.isLibre || task.pendingValidation)
-                TextButton.icon(
-                  onPressed: onOpenLink,
-                  icon: const Icon(Icons.favorite_border, size: 16, color: _beige),
-                  label: const Text(
-                    'Aider / voir',
-                    style: TextStyle(color: _beige),
-                  ),
-                ),
+              ),
               const Spacer(),
               if (task.link.isNotEmpty &&
                   task.link != '—' &&
                   task.link.startsWith('http'))
                 IconButton(
-                  tooltip: 'Voir sur GitLab',
+                  tooltip: 'Ouvrir le lien',
                   onPressed: onOpenLink,
-                  icon: const Icon(Icons.open_in_new, size: 18, color: Colors.white38),
+                  icon: const Icon(Icons.link, size: 18, color: Colors.white38),
                 ),
             ],
           ),

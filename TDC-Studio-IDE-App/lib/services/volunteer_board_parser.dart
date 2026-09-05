@@ -3,7 +3,7 @@
 
 import '../models/volunteer_task.dart';
 
-/// Parse le tableau Markdown de VOLUNTEER_BOARD.md (source de vérité).
+/// Parse le tableau Markdown de VOLUNTEER_BOARD.md (wishlist / backlog).
 class VolunteerBoardParser {
   VolunteerBoardParser._();
 
@@ -44,41 +44,6 @@ class VolunteerBoardParser {
       ));
     }
     return tasks;
-  }
-
-  /// Met à jour la ligne d'une tâche (Pris par + statut) dans le markdown.
-  static String claimInMarkdown({
-    required String markdown,
-    required String taskId,
-    required String username,
-    String status = 'En cours',
-    String? link,
-  }) {
-    final handle = username.startsWith('@') ? username : '@$username';
-    final lines = markdown.split('\n');
-    final out = <String>[];
-
-    for (final line in lines) {
-      if (!line.trimLeft().startsWith('|')) {
-        out.add(line);
-        continue;
-      }
-      final cells = _splitRow(line);
-      if (cells.isEmpty || cells[0].trim() != taskId) {
-        out.add(line);
-        continue;
-      }
-      while (cells.length < 8) {
-        cells.add('—');
-      }
-      cells[1] = ' $status ';
-      cells[6] = ' $handle ';
-      if (link != null && link.isNotEmpty) {
-        cells[7] = ' $link ';
-      }
-      out.add('|${cells.join('|')}|');
-    }
-    return out.join('\n');
   }
 
   static List<String> _splitRow(String line) {

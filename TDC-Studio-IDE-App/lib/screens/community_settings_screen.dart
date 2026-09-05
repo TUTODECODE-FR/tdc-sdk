@@ -172,10 +172,10 @@ class _CommunitySettingsScreenState extends State<CommunitySettingsScreen> {
                       ),
                       SizedBox(height: 8),
                       Text(
-                        'Pour participer (prendre une tâche, proposer une idée '
-                        'ou signaler un bug), ajoute ton pseudo GitLab et un '
-                        'jeton personnel. La lecture du tableau reste possible '
-                        'sans jeton.',
+                        'Pour proposer une idée ou signaler un bug depuis '
+                        'l’app, ajoute ton pseudo GitLab et un jeton personnel. '
+                        'La lecture du tableau reste possible sans jeton. '
+                        'Pour coder : branche + MR (voir CONTRIBUTING).',
                         style: TextStyle(color: Colors.white70, height: 1.4),
                       ),
                     ],
@@ -261,9 +261,9 @@ class _CommunitySettingsScreenState extends State<CommunitySettingsScreen> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Nécessaire pour prendre une tâche, proposer une idée ou '
-                  'signaler un bug via GitLab. Scope « api ». Stocké uniquement '
-                  'en local sur cet ordinateur — tu peux le révoquer à tout moment.',
+                  'Nécessaire pour proposer une idée ou signaler un bug via '
+                  'GitLab. Scope « api ». Stocké uniquement en local sur cet '
+                  'ordinateur — tu peux le révoquer à tout moment.',
                   style: TextStyle(color: Colors.white38, fontSize: 12, height: 1.35),
                 ),
                 const SizedBox(height: 8),

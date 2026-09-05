@@ -10,17 +10,4 @@ void main() {
     expect(tasks.first.id, 'TDC-001');
     expect(tasks.first.isLibre, isTrue);
   });
-
-  test('claimInMarkdown updates Pris par and status', () {
-    final updated = VolunteerBoardParser.claimInMarkdown(
-      markdown: volunteerBoardFallbackMarkdown,
-      taskId: 'TDC-001',
-      username: 'winancher',
-    );
-    final tasks = VolunteerBoardParser.parse(updated);
-    final t = tasks.firstWhere((e) => e.id == 'TDC-001');
-    expect(t.status, 'En cours');
-    expect(t.takenBy, '@winancher');
-    expect(t.isLibre, isFalse);
-  });
 }
