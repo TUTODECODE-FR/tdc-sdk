@@ -105,21 +105,20 @@ class GitlabVolunteerService {
     if (pat == null) {
       return const GitlabVolunteerResult(
         ok: false,
-        message: 'Ajoute un jeton GitLab dans Communauté / Bénévolat.',
+        message:
+            'Pour participer, ajoute ton jeton GitLab (scope api) dans '
+            'Paramètres → Communauté.',
       );
     }
 
     var username = await CommunitySettingsService.getUsername();
     if (username == null || username.isEmpty) {
-      final who = await verifyPat(pat);
-      if (!who.ok || who.username == null) {
-        return GitlabVolunteerResult(
-          ok: false,
-          message: who.message,
-        );
-      }
-      username = who.username!;
-      await CommunitySettingsService.setUsername(username);
+      return const GitlabVolunteerResult(
+        ok: false,
+        message:
+            'Indique ton pseudo GitLab dans Paramètres → Communauté '
+            'avant de prendre une tâche.',
+      );
     }
 
     final host = await CommunitySettingsService.getHost();
@@ -337,7 +336,9 @@ class GitlabVolunteerService {
     if (pat == null) {
       return const GitlabVolunteerResult(
         ok: false,
-        message: 'Ajoute un jeton GitLab pour envoyer ta contribution.',
+        message:
+            'Pour participer, ajoute ton jeton GitLab (scope api) dans '
+            'Paramètres → Communauté.',
       );
     }
 

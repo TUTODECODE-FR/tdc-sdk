@@ -73,7 +73,16 @@ class _CommunitySettingsScreenState extends State<CommunitySettingsScreen> {
     await CommunitySettingsService.setProjectPath(_projectCtrl.text);
     await CommunitySettingsService.setHost(_hostCtrl.text);
 
-    if (verify && _patCtrl.text.trim().isNotEmpty) {
+    if (verify) {
+      if (_patCtrl.text.trim().isEmpty) {
+        setState(() {
+          _saving = false;
+          _statusOk = false;
+          _statusMsg =
+              'Le jeton est requis pour participer (scope « api »).';
+        });
+        return;
+      }
       final r = await GitlabVolunteerService.verifyPat(_patCtrl.text.trim());
       if (r.ok && r.username != null) {
         _userCtrl.text = r.username!;
@@ -163,9 +172,10 @@ class _CommunitySettingsScreenState extends State<CommunitySettingsScreen> {
                       ),
                       SizedBox(height: 8),
                       Text(
-                        'Relie ton compte GitLab pour prendre une tâche, '
-                        'proposer une idée ou signaler un souci — sans jargon, '
-                        'juste de l\'entraide.',
+                        'Pour participer (prendre une tâche, proposer une idée '
+                        'ou signaler un bug), ajoute ton pseudo GitLab et un '
+                        'jeton personnel. La lecture du tableau reste possible '
+                        'sans jeton.',
                         style: TextStyle(color: Colors.white70, height: 1.4),
                       ),
                     ],
@@ -226,7 +236,7 @@ class _CommunitySettingsScreenState extends State<CommunitySettingsScreen> {
                   controller: _userCtrl,
                   style: const TextStyle(color: Colors.white),
                   decoration: _fieldDeco(
-                    'Pseudo GitLab (affiché)',
+                    'Pseudo GitLab (requis pour participer)',
                     hint: 'ex. ton-pseudo-gitlab',
                   ),
                 ),
@@ -236,7 +246,7 @@ class _CommunitySettingsScreenState extends State<CommunitySettingsScreen> {
                   obscureText: _obscurePat,
                   style: const TextStyle(color: Colors.white),
                   decoration: _fieldDeco(
-                    'Jeton d\'accès personnel (optionnel)',
+                    'Jeton d\'accès personnel (requis pour participer)',
                     hint: 'glpat-…',
                   ).copyWith(
                     suffixIcon: IconButton(
@@ -251,8 +261,9 @@ class _CommunitySettingsScreenState extends State<CommunitySettingsScreen> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Le jeton doit avoir le droit « api ». Il reste sur cet ordinateur '
-                  '(préférences locales). Tu peux le révoquer à tout moment.',
+                  'Nécessaire pour prendre une tâche, proposer une idée ou '
+                  'signaler un bug via GitLab. Scope « api ». Stocké uniquement '
+                  'en local sur cet ordinateur — tu peux le révoquer à tout moment.',
                   style: TextStyle(color: Colors.white38, fontSize: 12, height: 1.35),
                 ),
                 const SizedBox(height: 8),

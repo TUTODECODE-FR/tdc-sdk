@@ -69,20 +69,26 @@ class _VolunteerHubScreenState extends State<VolunteerHubScreen> {
     }).toList();
   }
 
+  Future<void> _openCommunitySettings() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const CommunitySettingsScreen()),
+    );
+    if (mounted) await _reload();
+  }
+
   Future<void> _needPatDialog() async {
     await showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: _surface,
         title: const Text(
-          'Un petit jeton pour participer',
+          'Jeton GitLab requis',
           style: TextStyle(color: _beige),
         ),
         content: const Text(
-          'Pour dire « je m\'en occupe » ou envoyer une idée, '
-          'il faut un jeton GitLab (droit « api »).\n\n'
-          'C\'est comme une clé personnelle : elle reste sur ton ordi, '
-          'et tu peux la supprimer quand tu veux.',
+          'Pour participer, ajoute ton jeton GitLab (scope api) dans '
+          'Paramètres → Communauté.\n\n'
+          'Sans jeton, on ne peut pas enregistrer ta contribution sur GitLab.',
           style: TextStyle(color: Colors.white70, height: 1.4),
         ),
         actions: [
@@ -90,21 +96,45 @@ class _VolunteerHubScreenState extends State<VolunteerHubScreen> {
             onPressed: () => Navigator.pop(ctx),
             child: const Text('Plus tard', style: TextStyle(color: Colors.white54)),
           ),
-          TextButton(
+          FilledButton(
             onPressed: () {
               Navigator.pop(ctx);
-              openExternalUrl(CommunitySettingsService.patTokensUrl);
+              _openCommunitySettings();
             },
-            child: const Text('Créer un jeton', style: TextStyle(color: _gold)),
+            style: FilledButton.styleFrom(
+              backgroundColor: _beige,
+              foregroundColor: Colors.black,
+            ),
+            child: const Text('Ouvrir les réglages'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _needUsernameDialog() async {
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: _surface,
+        title: const Text(
+          'Pseudo GitLab requis',
+          style: TextStyle(color: _beige),
+        ),
+        content: const Text(
+          'Pour prendre une tâche, indique ton pseudo GitLab dans '
+          'Paramètres → Communauté (il sera affiché sur le tableau).',
+          style: TextStyle(color: Colors.white70, height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Plus tard', style: TextStyle(color: Colors.white54)),
           ),
           FilledButton(
             onPressed: () {
               Navigator.pop(ctx);
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const CommunitySettingsScreen(),
-                ),
-              );
+              _openCommunitySettings();
             },
             style: FilledButton.styleFrom(
               backgroundColor: _beige,
@@ -120,6 +150,10 @@ class _VolunteerHubScreenState extends State<VolunteerHubScreen> {
   Future<void> _claim(VolunteerTask task) async {
     if (!_hasPat) {
       await _needPatDialog();
+      return;
+    }
+    if (_username == null || _username!.trim().isEmpty) {
+      await _needUsernameDialog();
       return;
     }
 
@@ -333,14 +367,7 @@ class _VolunteerHubScreenState extends State<VolunteerHubScreen> {
           ),
           IconButton(
             tooltip: 'Réglages',
-            onPressed: () async {
-              await Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const CommunitySettingsScreen(),
-                ),
-              );
-              await _reload();
-            },
+            onPressed: _openCommunitySettings,
             icon: const Icon(Icons.settings_outlined),
           ),
         ],
