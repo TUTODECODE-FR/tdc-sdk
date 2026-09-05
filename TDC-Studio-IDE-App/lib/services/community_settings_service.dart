@@ -14,6 +14,8 @@ class CommunitySettingsService {
   static const defaultGitlabHost = 'https://gitlab.com';
   static const patTokensUrl =
       'https://gitlab.com/-/user_settings/personal_access_tokens';
+  static const gitlabOrgUrl = 'https://gitlab.com/tutodecode-org';
+  static const liberapayUrl = 'https://liberapay.com/tutodecode';
 
   static const _kPat = 'tdc_community_gitlab_pat';
   static const _kUsername = 'tdc_community_gitlab_username';

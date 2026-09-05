@@ -206,7 +206,23 @@ class _CommunitySettingsScreenState extends State<CommunitySettingsScreen> {
                     hint: CommunitySettingsService.defaultProjectPath,
                   ),
                 ),
+                const SizedBox(height: 28),
+                const Text(
+                  'LIENS / SOUTENIR',
+                  style: TextStyle(
+                    color: Colors.white54,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.1,
+                  ),
+                ),
                 const SizedBox(height: 10),
+                const Text(
+                  'Repos publics et soutien libre — sans « claim » de tâche. '
+                  'On avance ensemble, à ton rythme.',
+                  style: TextStyle(color: Colors.white38, fontSize: 12, height: 1.35),
+                ),
+                const SizedBox(height: 8),
                 Align(
                   alignment: Alignment.centerLeft,
                   child: TextButton.icon(
@@ -216,8 +232,33 @@ class _CommunitySettingsScreenState extends State<CommunitySettingsScreen> {
                     },
                     icon: const Icon(Icons.open_in_new, size: 16, color: _beige),
                     label: const Text(
-                      'Ouvrir le projet sur GitLab',
+                      'Projet GitLab — TDC-SDK',
                       style: TextStyle(color: _beige),
+                    ),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: () => openExternalUrl(
+                      CommunitySettingsService.gitlabOrgUrl,
+                    ),
+                    icon: const Icon(Icons.group_outlined, size: 16, color: _beige),
+                    label: const Text(
+                      'Organisation GitLab — tutodecode-org',
+                      style: TextStyle(color: _beige),
+                    ),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    onPressed: () => openExternalUrl(
+                      CommunitySettingsService.liberapayUrl,
+                    ),
+                    child: const Text(
+                      '❤️ Soutenir TUTODECODE',
+                      style: TextStyle(color: Color(0xFFE11D48)),
                     ),
                   ),
                 ),
