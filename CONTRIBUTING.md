@@ -8,9 +8,11 @@ TDC-SDK est la suite d’outils officielle du langage **TUTODECODE Script (`.tdc
 
 👉 **[VOLUNTEER_BOARD.md](./VOLUNTEER_BOARD.md)** — backlog des améliorations, statut, et colonne **Pris par** (ton pseudo GitLab/GitHub).
 
-- Une tâche libre → tu l’inscris à ton nom (`En cours`) via une MR.
+**Via l'app TDC Studio** → lanceur → **Hub Communauté** (ou **Paramètres → Communauté / Bénévolat**) : claim, idées et bugs sans formulaire MR manuel — le hub utilise l'API GitLab ; le board reste la référence.
+
+- Claim en 4 étapes : choisir `Libre` → Hub « Je m'en occupe » (ou MR qui **ne remplit que** **Pris par** (`@username`) + `En cours`) → travailler sur une branche → au merge : `Fait` + lien MR.
+- Si **Pris par** est rempli → **ne pas prendre** (discussion ou autre tâche). Soft lock **14 jours** sans activité → retour à `Libre`. Une tâche `En cours` à la fois (recommandé).
 - Une tâche = une Merge Request, avec **DCO** (`Signed-off-by`).
-- Tu abandonnes → tu retires ton pseudo pour libérer la ligne.
 - Contact : [contact@tutodecode.org](mailto:contact@tutodecode.org)
 
 Les issues GitLab restent utiles pour discuter un point précis, mais **le board est la référence** pour savoir qui fait quoi.

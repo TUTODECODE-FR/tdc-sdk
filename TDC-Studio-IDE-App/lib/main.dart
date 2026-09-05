@@ -12,6 +12,8 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import 'app_studio_screen.dart';
 import 'editorial_screen.dart';
+import 'screens/community_settings_screen.dart';
+import 'screens/volunteer_hub_screen.dart';
 import 'services/recent_projects_service.dart';
 import 'tdc_parser_v2.dart';
 
@@ -298,6 +300,84 @@ class _TdcStudioLauncherScreenState extends State<TdcStudioLauncherScreen> {
                             ),
                           ),
                         ],
+                      ),
+                      const SizedBox(height: 36),
+                      const Text(
+                        'COMMUNAUTÉ',
+                        style: TextStyle(
+                          color: Colors.white54,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.1,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF141414),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color(0xFFD4AF37).withValues(alpha: 0.35),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Entraide & bénévolat',
+                              style: TextStyle(
+                                color: Color(0xFFF5EBDA),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            const Text(
+                              'Voir ce qui est libre, s\'occuper d\'une tâche, '
+                              'proposer une idée ou signaler un souci — sans ouvrir GitLab à la main.',
+                              style: TextStyle(color: Colors.grey, fontSize: 12, height: 1.4),
+                            ),
+                            const SizedBox(height: 14),
+                            Wrap(
+                              spacing: 10,
+                              runSpacing: 8,
+                              children: [
+                                FilledButton.icon(
+                                  onPressed: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => const VolunteerHubScreen(),
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(Icons.favorite_outline, size: 18),
+                                  label: const Text('Hub Communauté'),
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: const Color(0xFFD4AF37),
+                                    foregroundColor: Colors.black,
+                                  ),
+                                ),
+                                OutlinedButton.icon(
+                                  onPressed: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => const CommunitySettingsScreen(),
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(Icons.settings_outlined, size: 18),
+                                  label: const Text('Paramètres communauté'),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: const Color(0xFFF5EBDA),
+                                    side: const BorderSide(color: Color(0xFFF5EBDA)),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),

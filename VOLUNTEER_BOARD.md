@@ -6,11 +6,19 @@ Ce fichier est la **source de vérité** pour savoir qui travaille sur quoi. Les
 
 ## Comment ça marche
 
-1. **Choisir** une ligne dont le statut est `Libre`.
-2. **Réclamer** : ouvrir une MR (ou un commit sur une branche) qui met ton pseudo GitLab/GitHub dans la colonne **Pris par**, et passe le statut à `En cours`.
-3. **Travailler** : une tâche = une Merge Request, branche dédiée, commits avec **DCO** (`Signed-off-by: Prénom NOM <email>`).
-4. **Livrer** : mettre le lien de la MR dans **MR / Lien**, puis passer le statut à `Fait` au merge (ou laisser un mainteneur le faire).
-5. **Abandonner** : retirer ton pseudo, remettre `Libre`, et laisser un mot dans la description si besoin.
+**Via l'app TDC Studio** → lanceur → **Hub Communauté** (ou **Paramètres → Communauté / Bénévolat**) : tu peux prendre une tâche (« Je m'en occupe »), proposer une idée ou signaler un bug. L'app parle à l'API GitLab (jeton personnel scope `api`) et s'appuie sur ce fichier comme source de vérité.
+
+1. **Choisir** une tâche dont le statut est `Libre`.
+2. **Réclamer** : depuis le Hub (recommandé) ou ouvrir une MR qui **ne fait que** remplir **Pris par** avec `@username` et passer le statut à `En cours`.
+3. **Travailler** sur une branche dédiée (commits avec **DCO** : `Signed-off-by: Prénom NOM <email>`).
+4. **Livrer** : au merge, passer le statut à `Fait` et mettre le lien de la MR dans **MR / Lien**.
+
+### Anti-collision (personne ne se marche dessus)
+
+- Si **Pris par** est rempli → **ne pas prendre** : ouvre une discussion ou choisis une autre tâche.
+- Soft lock : sans MR / activité pendant **14 jours**, la tâche revient à `Libre` (toi ou un mainteneur).
+- Recommandé : **une personne = une seule tâche** `En cours` à la fois.
+- Abandonner : retirer ton pseudo, remettre `Libre`, laisser un mot si besoin.
 
 ### Statuts
 
