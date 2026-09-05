@@ -227,7 +227,7 @@ class _CommunitySettingsScreenState extends State<CommunitySettingsScreen> {
                   style: const TextStyle(color: Colors.white),
                   decoration: _fieldDeco(
                     'Pseudo GitLab (affiché)',
-                    hint: 'ex. cristina',
+                    hint: 'ex. ton-pseudo-gitlab',
                   ),
                 ),
                 const SizedBox(height: 12),
