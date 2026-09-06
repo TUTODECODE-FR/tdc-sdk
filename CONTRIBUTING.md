@@ -2,16 +2,18 @@
 
 TDC-SDK est la suite d’outils officielle du langage **TUTODECODE Script (`.tdc`)**.
 
-## Tableau des idées (wishlist)
+## Wishlist / bénévolat (Issues GitLab)
 
-👉 **[VOLUNTEER_BOARD.md](./VOLUNTEER_BOARD.md)** — backlog des améliorations ouvertes (statut, compétences, lien MR).
+**Source de vérité** : [issues label `benevolat`](https://gitlab.com/tutodecode-org/tdc-sdk/-/issues/?label_name[]=benevolat)  
+Index : [VOLUNTEER_BOARD.md](./VOLUNTEER_BOARD.md) (pas de tableau à éditer à la main).
 
 **Via l’app TDC Studio** → lanceur → **Hub Communauté** :
 
-- lire le tableau ;
-- **Proposer une idée** / **Signaler un bug** (jeton GitLab scope `api` dans Paramètres → Communauté).
+- liste **live** des issues `benevolat` (API GitLab) ;
+- **Proposer une idée** / **Signaler un bug** (jeton scope `api` → crée l’issue avec les bons labels).
 
-**Pour coder** : branche dédiée + Merge Request avec **DCO** (`Signed-off-by: Prénom NOM <email>`). Pas de réservation de tâche dans l’app.
+**Pour coder** : branche + Merge Request avec **DCO** (`Signed-off-by: Prénom NOM <email>`).  
+Pas de « claim » markdown — assignee GitLab optionnel.
 
 Contact : [contact@tutodecode.org](mailto:contact@tutodecode.org)
 

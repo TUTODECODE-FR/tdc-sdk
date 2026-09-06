@@ -139,11 +139,13 @@ class CommunitySettingsService {
     return '$host/$path';
   }
 
+  /// Liste live des issues bénévolat (source de vérité).
   static Future<String> boardWebUrl() async {
     final base = await projectWebUrl();
-    return '$base/-/blob/main/VOLUNTEER_BOARD.md';
+    return '$base/-/issues/?label_name[]=benevolat';
   }
 
+  /// Ancien fichier index (doc) — plus utilisé pour la liste Hub.
   static Future<String> boardRawUrl() async {
     final base = await projectWebUrl();
     return '$base/-/raw/main/VOLUNTEER_BOARD.md';

@@ -31,7 +31,9 @@ GitLab est la **source de vérité** (MR, validation, tags). GitHub sert uniquem
 | **main** (push après merge) | `sync-os-builds` → `auto_tag` seul | Minimal (~1 min) |
 | **tag** `v*` | `sync-os-builds` + `release` (mirror → sync → release_gitlab) | Faible — attente curl, pas de compile Flutter OS |
 
-Les jobs `build-test` (linux/android) sont **manual only** — jamais lancés automatiquement.
+**Aucun job `build-test` / Android / Linux sur GitLab** : TDC Studio est desktop-only ;
+les builds OS (Win / macOS / Linux) n’apparaissent **pas** dans l’UI MR — ils partent
+sur GitHub Actions uniquement après acceptation du merge + tag `v*`.
 
 Les branches feature **ne déclenchent pas** de pipeline (règle `workflow:`) — seules les MR, `main` et les tags consomment du quota.
 

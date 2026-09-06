@@ -335,7 +335,7 @@ class _TdcStudioLauncherScreenState extends State<TdcStudioLauncherScreen> {
                             ),
                             const SizedBox(height: 6),
                             const Text(
-                              'Voir la wishlist, proposer une idée ou signaler un souci — sans ouvrir GitLab à la main.',
+                              'Issues bénévolat en live, proposer une idée ou signaler un souci — sans éditer un tableau markdown.',
                               style: TextStyle(color: Colors.grey, fontSize: 12, height: 1.4),
                             ),
                             const SizedBox(height: 14),

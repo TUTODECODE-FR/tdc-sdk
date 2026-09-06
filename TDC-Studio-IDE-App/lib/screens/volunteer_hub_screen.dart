@@ -60,6 +60,10 @@ class _VolunteerHubScreenState extends State<VolunteerHubScreen> {
           return t.isEnCours;
         case 'fait':
           return t.isFait;
+        case 'bug':
+          return t.isBug;
+        case 'idea':
+          return t.isIdea && !t.isBug;
         default:
           return true;
       }
@@ -311,10 +315,11 @@ class _VolunteerHubScreenState extends State<VolunteerHubScreen> {
           const SizedBox(height: 6),
           Text(
             _fromNetwork
-                ? 'Wishlist des idées ouvertes. Consulte le tableau, '
-                    'propose une idée ou signale un bug. Pour coder : '
-                    'branche + MR classique (voir CONTRIBUTING).'
-                : 'Aperçu hors ligne. Connecte-toi pour voir le tableau à jour.',
+                ? 'Liste live des issues GitLab (label benevolat). '
+                    'Propose une idée ou signale un bug depuis ici — '
+                    'pour coder : branche + MR (voir CONTRIBUTING).'
+                : 'Aperçu hors ligne. Les issues live apparaîtront dès que '
+                    'GitLab est joignable.',
             style: const TextStyle(color: Colors.white70, height: 1.35, fontSize: 13),
           ),
         ],
@@ -369,7 +374,7 @@ class _VolunteerHubScreenState extends State<VolunteerHubScreen> {
             },
             icon: const Icon(Icons.open_in_new, size: 16, color: Colors.white54),
             label: const Text(
-              'Voir le tableau sur GitLab',
+              'Voir les issues sur GitLab',
               style: TextStyle(color: Colors.white54),
             ),
           ),
@@ -402,9 +407,11 @@ class _VolunteerHubScreenState extends State<VolunteerHubScreen> {
         spacing: 8,
         children: [
           chip('Tout', null, _beige),
-          chip('Libre', 'libre', const Color(0xFF10B981)),
+          chip('Ouvertes', 'libre', const Color(0xFF10B981)),
           chip('En cours', 'cours', _gold),
-          chip('Fait', 'fait', Colors.white54),
+          chip('Idées', 'idea', _beige),
+          chip('Bugs', 'bug', const Color(0xFFF59E0B)),
+          chip('Fermées', 'fait', Colors.white54),
         ],
       ),
     );

@@ -1,8 +1,13 @@
 # SPDX-License-Identifier: GPL-3.0-only
 # Copyright (C) 2026 TUTODECODE Association <contact@tutodecode.org>
-# CI TDC-SDK / TDC Studio v2.0.0
+# CI TDC-SDK / TDC Studio v2.0.0 — desktop only (Win / macOS / Linux)
 #
-# Trois types de pipeline (zéro build multi-OS sur GitLab — GitHub Actions uniquement) :
+# TDC Studio n'est PAS une app Android : aucun job Android ici.
+# Builds OS (Win/Mac/Linux) = GitHub Actions UNIQUEMENT, après acceptation
+# du merge (push main → auto_tag → tag v* → mirror GitHub → release.yml).
+# Les pipelines MR = validate seulement (pas de flutter build OS).
+#
+# Trois types de pipeline :
 #   1. MR (merge_request_event) → stage validate uniquement
 #   2. main (push après merge MR) → auto_tag uniquement (~1 min Alpine)
 #   3. tag v* → mirror_tag_to_github → sync_github_multi_os_builds → release_gitlab
@@ -30,7 +35,6 @@ workflow:
 
 stages:
   - validate
-  - build-test
   - sync-os-builds
   - release
 
@@ -198,25 +202,6 @@ secrets_and_private_keys_scan:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: on_success
 
-android_dangerous_permissions_audit:
-  stage: validate
-  script:
-    - |
-      MANIFEST="$STUDIO_DIR/android/app/src/main/AndroidManifest.xml"
-      if [ ! -f "$MANIFEST" ]; then
-        echo "✅ No Android target in TDC Studio desktop app — permissions audit N/A (pass)."
-        exit 0
-      fi
-      if grep -qE "(RECEIVE_SMS|READ_SMS|SEND_SMS|CALL_PHONE|PROCESS_OUTGOING_CALLS|SYSTEM_ALERT_WINDOW|BIND_ACCESSIBILITY_SERVICE)" "$MANIFEST"; then
-        echo "❌ Error: High-risk/dangerous permission detected in AndroidManifest.xml!"
-        exit 1
-      else
-        echo "✅ Android permissions security check passed."
-      fi
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: on_success
-
 megalinter:
   stage: validate
   image: oxsecurity/megalinter:v8
@@ -336,24 +321,10 @@ military_hardening_audit:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: on_success
 
-# === STAGE: BUILD-TEST (manual only — multi-OS builds on GitHub Actions) ===
-# Jamais déclenché sur MR ni sur main/tag : zéro quota GitLab pour flutter build linux/windows/macos.
-build_linux_test:
-  stage: build-test
-  script:
-    - echo "⏭️ Linux release build offloaded to GitHub Actions (.github/workflows/release.yml)."
-    - cd "$STUDIO_DIR" && flutter pub get && flutter test
-  rules:
-    - when: manual
-      allow_failure: true
-
-build_android_test:
-  stage: build-test
-  script:
-    - echo "✅ TDC Studio is desktop-first — no Android APK in release pipeline."
-  rules:
-    - when: manual
-      allow_failure: true
+# === Pas de stage build-test sur GitLab ===
+# TDC Studio = desktop uniquement. Les binaires Win/macOS/Linux sont produits
+# par GitHub Actions (.github/workflows/release.yml) UNIQUEMENT après merge
+# accepté → tag v* (jamais sur une MR). Aucun job Android (Studio n'en a pas).
 
 # === STAGE: AUTO-TAG (main → vX.Y.Z.N) ===
 # Requires CI variable PROJECT_ACCESS_TOKEN (scopes: api, write_repository).

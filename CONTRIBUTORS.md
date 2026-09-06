@@ -2,13 +2,15 @@
 
 Merci aux personnes qui font avancer **TDC-SDK** et **TDC Studio** — développement, UX, pédagogie ou documentation.
 
-Pour rejoindre : [VOLUNTEER_BOARD.md](./VOLUNTEER_BOARD.md) · Hub Communauté dans TDC Studio · [CONTRIBUTING.md](./CONTRIBUTING.md)
+Pour rejoindre : [issues `benevolat`](https://gitlab.com/tutodecode-org/tdc-sdk/-/issues/?label_name[]=benevolat) · Hub Communauté · [CONTRIBUTING.md](./CONTRIBUTING.md)
+
+*Entrée ajoutée quand une première MR est mergée (ou sur demande à contact@tutodecode.org).*
 
 ## Bénévoles actifs
 
 | Nom | GitLab | Contribution |
 | :--- | :--- | :--- |
-| **Cristina Cavaleri** | [@CavaleriCristina](https://gitlab.com/CavaleriCristina) | TDC Studio — empty state quiz guidé ([TDC-009](./VOLUNTEER_BOARD.md)) |
+| **Cristina Cavaleri** | [@CavaleriCristina](https://gitlab.com/CavaleriCristina) | TDC Studio — empty state quiz guidé |
 
 ## Mainteneurs
 
