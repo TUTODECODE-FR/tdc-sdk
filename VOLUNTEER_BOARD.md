@@ -6,13 +6,46 @@
 Ce fichier est un **index** (pas un tableau à éditer à la main).  
 Le **Hub Communauté** de TDC Studio lit les issues en live via l’API GitLab.
 
-## Comment contribuer (sans édition manuelle)
+## Flux bénévole (automatisé)
 
-1. **Consulter** les [issues `benevolat`](https://gitlab.com/tutodecode-org/tdc-sdk/-/issues/?label_name[]=benevolat) — ou le Hub dans TDC Studio.
-2. **Proposer** une idée / **signaler** un bug : depuis le Hub (jeton scope `api`) ou en créant une issue avec le label `benevolat`.
-3. **Coder** : branche + **Merge Request** avec DCO (`Signed-off-by`). Pas de colonne « Pris par » à remplir.
+### 1. Proposer une idée / un bug
 
-Assignees GitLab = travail en cours (optionnel). Fermer l’issue au merge.
+- **Hub Communauté** (TDC Studio) → *Proposer une idée* / *Un problème ?*  
+  (jeton GitLab scope `api` → crée l’issue avec `benevolat` + `wishlist|bug|proposition`)
+- **Ou** créer une [issue GitLab](https://gitlab.com/tutodecode-org/tdc-sdk/-/issues/new) avec ces labels.
+
+### 2. Prendre une tâche (`prendre #<iid>`)
+
+Anti-collision : une seule personne peut être assignee. Le CI bloque une 2ᵉ claim.
+
+1. Choisir une issue **ouverte sans assignee** (statut « Libre » dans le Hub).
+2. Créer la branche `volunteer/prendre-<iid>` (ex. `volunteer/prendre-42`).
+3. Ajouter le marqueur `volunteer/claims/<iid>.md` contenant ton **pseudo GitLab** :
+
+```markdown
+username: ton-pseudo
+```
+
+4. Ouvrir une **Merge Request** dont le titre est **exactement** : `prendre #<iid>`  
+   (ex. `prendre #42`). Corps minimal OK. **DCO** obligatoire.
+5. Maxime (ou un reviewer) **valide / merge** la MR.
+
+**Hub** : bouton *Préparer ma MR prendre* → deep-link GitLab (titre prérempli) + instructions.
+
+### 3. Après le merge (automatique)
+
+Le job CI `volunteer_claim_apply` sur `main` :
+
+1. détecte le claim (fichier marqueur et/ou titre `prendre #N`) ;
+2. assigne l’issue à l’auteur du claim ;
+3. ajoute le label `en-cours`, retire `libre` s’il est présent.
+
+Ensuite : coder sur une branche dédiée, MR de code classique, fermer l’issue au merge.
+
+### 4. Garde anti-collision (MR)
+
+Le job `volunteer_claim_validate` **échoue** si l’issue cible a déjà un **autre** assignee.  
+Même auteur déjà assignee → OK (idempotent).
 
 ### Labels recommandés
 
@@ -22,6 +55,8 @@ Assignees GitLab = travail en cours (optionnel). Fermer l’issue au merge.
 | `wishlist` | Idée / amélioration |
 | `proposition` | Proposition venue du Hub |
 | `bug` | Anomalie |
+| `libre` | Optionnel — disponible (retiré au claim) |
+| `en-cours` | Posé automatiquement après merge du claim |
 | `P1` / `P2` / `P3` | Priorité (optionnel) |
 
 ### Contact
@@ -35,11 +70,7 @@ Association TUTODECODE — [contact@tutodecode.org](mailto:contact@tutodecode.or
 Les anciennes lignes markdown (TDC-001…TDC-012) sont dans  
 [`docs/VOLUNTEER_BOARD_ARCHIVED.md`](./docs/VOLUNTEER_BOARD_ARCHIVED.md).
 
-Pour les republier comme issues (mainteneurs) :
-
 ```bash
 export GITLAB_TOKEN="glpat-…"   # scope api
 python3 scripts/seed_volunteer_issues.py   # optionnel
 ```
-
-Ou créer manuellement une issue par idée avec label `benevolat,wishlist`.

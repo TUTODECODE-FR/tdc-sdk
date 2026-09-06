@@ -74,6 +74,22 @@ dco_check:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: on_success
 
+# Anti-collision « prendre #<iid> » — voir VOLUNTEER_BOARD.md / scripts/volunteer_claim_apply.py
+# Variable CI recommandée : PROJECT_ACCESS_TOKEN (api) pour la vérif assignee live.
+volunteer_claim_validate:
+  stage: validate
+  image: python:3.12-alpine
+  before_script:
+    - apk add --no-cache git
+    - git config --global --add safe.directory "$CI_PROJECT_DIR"
+    - git fetch origin "${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-main}" || true
+  script:
+    - python3 scripts/test_volunteer_claim.py
+    - python3 scripts/volunteer_claim_apply.py --mode validate
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: on_success
+
 test_and_analyze:
   stage: validate
   script:
@@ -325,6 +341,23 @@ military_hardening_audit:
 # TDC Studio = desktop uniquement. Les binaires Win/macOS/Linux sont produits
 # par GitHub Actions (.github/workflows/release.yml) UNIQUEMENT après merge
 # accepté → tag v* (jamais sur une MR). Aucun job Android (Studio n'en a pas).
+
+# === STAGE: VOLUNTEER CLAIM APPLY (main after merge of prendre #N) ===
+# Assigne l'issue GitLab + label en-cours. Idempotent. Skip si pas de claim.
+# Requires PROJECT_ACCESS_TOKEN (api) — CI_JOB_TOKEN may lack issue write scope.
+volunteer_claim_apply:
+  stage: sync-os-builds
+  image: python:3.12-alpine
+  before_script:
+    - apk add --no-cache git
+    - git config --global --add safe.directory "$CI_PROJECT_DIR"
+    - git fetch origin main || true
+  script:
+    - python3 scripts/volunteer_claim_apply.py --mode apply
+  rules:
+    # Script no-ops quickly when no claim is detected (title / files).
+    - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"
+      when: on_success
 
 # === STAGE: AUTO-TAG (main → vX.Y.Z.N) ===
 # Requires CI variable PROJECT_ACCESS_TOKEN (scopes: api, write_repository).

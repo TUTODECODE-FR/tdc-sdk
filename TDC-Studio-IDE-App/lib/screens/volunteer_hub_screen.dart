@@ -217,6 +217,79 @@ class _VolunteerHubScreenState extends State<VolunteerHubScreen> {
     );
   }
 
+  Future<void> _prepareClaim(VolunteerTask task) async {
+    final iid = task.issueIid;
+    if (iid == null) return;
+    final username = await CommunitySettingsService.getUsername();
+    final instructions = CommunitySettingsService.claimGitInstructions(
+      issueIid: iid,
+      username: username,
+    );
+    final mrUrl = await CommunitySettingsService.claimMergeRequestUrl(
+      issueIid: iid,
+      username: username,
+    );
+    if (!mounted) return;
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: _surface,
+        title: Text(
+          'Prendre ${task.id}',
+          style: const TextStyle(color: _beige),
+        ),
+        content: SizedBox(
+          width: 460,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  '1. Crée la branche + le marqueur volunteer/claims '
+                  '(commandes ci-dessous).\n'
+                  '2. Ouvre la MR avec le titre exact « prendre #N ».\n'
+                  '3. Après validation/merge, la CI t’assigne l’issue '
+                  '(label en-cours). Collision = pipeline rouge.',
+                  style: TextStyle(color: Colors.white70, height: 1.4),
+                ),
+                const SizedBox(height: 14),
+                SelectableText(
+                  instructions,
+                  style: const TextStyle(
+                    color: Color(0xFFD4AF37),
+                    fontFamily: 'monospace',
+                    fontSize: 12,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Fermer', style: TextStyle(color: Colors.white54)),
+          ),
+          FilledButton.icon(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await openExternalUrl(mrUrl);
+            },
+            style: FilledButton.styleFrom(
+              backgroundColor: _beige,
+              foregroundColor: Colors.black,
+            ),
+            icon: const Icon(Icons.merge_type, size: 18),
+            label: const Text('Ouvrir MR GitLab'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -278,6 +351,10 @@ class _VolunteerHubScreenState extends State<VolunteerHubScreen> {
                               );
                             }
                           },
+                          onPrepareClaim: _filtered[i].isLibre &&
+                                  _filtered[i].issueIid != null
+                              ? () => _prepareClaim(_filtered[i])
+                              : null,
                         ),
                       ),
           ),
@@ -316,8 +393,8 @@ class _VolunteerHubScreenState extends State<VolunteerHubScreen> {
           Text(
             _fromNetwork
                 ? 'Liste live des issues GitLab (label benevolat). '
-                    'Propose une idée ou signale un bug depuis ici — '
-                    'pour coder : branche + MR (voir CONTRIBUTING).'
+                    'Propose, prends une tâche (MR « prendre #N »), '
+                    'puis code — voir CONTRIBUTING / VOLUNTEER_BOARD.'
                 : 'Aperçu hors ligne. Les issues live apparaîtront dès que '
                     'GitLab est joignable.',
             style: const TextStyle(color: Colors.white70, height: 1.35, fontSize: 13),
@@ -421,10 +498,12 @@ class _VolunteerHubScreenState extends State<VolunteerHubScreen> {
 class _TaskCard extends StatelessWidget {
   final VolunteerTask task;
   final VoidCallback onOpenLink;
+  final VoidCallback? onPrepareClaim;
 
   const _TaskCard({
     required this.task,
     required this.onOpenLink,
+    this.onPrepareClaim,
   });
 
   static const _beige = Color(0xFFF5EBDA);
@@ -529,6 +608,17 @@ class _TaskCard extends StatelessWidget {
                   style: TextStyle(color: _beige),
                 ),
               ),
+              if (onPrepareClaim != null) ...[
+                const SizedBox(width: 4),
+                TextButton.icon(
+                  onPressed: onPrepareClaim,
+                  icon: const Icon(Icons.handshake_outlined, size: 16, color: _gold),
+                  label: const Text(
+                    'Préparer ma MR prendre',
+                    style: TextStyle(color: _gold),
+                  ),
+                ),
+              ],
               const Spacer(),
               if (task.link.isNotEmpty &&
                   task.link != '—' &&

@@ -5,15 +5,21 @@ TDC-SDK est la suite d’outils officielle du langage **TUTODECODE Script (`.tdc
 ## Wishlist / bénévolat (Issues GitLab)
 
 **Source de vérité** : [issues label `benevolat`](https://gitlab.com/tutodecode-org/tdc-sdk/-/issues/?label_name[]=benevolat)  
-Index : [VOLUNTEER_BOARD.md](./VOLUNTEER_BOARD.md) (pas de tableau à éditer à la main).
+Index détaillé : [VOLUNTEER_BOARD.md](./VOLUNTEER_BOARD.md) (pas de tableau à éditer à la main).
 
 **Via l’app TDC Studio** → lanceur → **Hub Communauté** :
 
 - liste **live** des issues `benevolat` (API GitLab) ;
-- **Proposer une idée** / **Signaler un bug** (jeton scope `api` → crée l’issue avec les bons labels).
+- **Proposer une idée** / **Signaler un bug** (jeton scope `api`) ;
+- **Préparer ma MR prendre** (deep-link + marqueur `volunteer/claims/<iid>.md`).
 
-**Pour coder** : branche + Merge Request avec **DCO** (`Signed-off-by: Prénom NOM <email>`).  
-Pas de « claim » markdown — assignee GitLab optionnel.
+### Prendre une tâche (automatisé)
+
+1. Issue libre → branche `volunteer/prendre-<iid>` + fichier `volunteer/claims/<iid>.md` (pseudo GitLab).
+2. MR titrée **exactement** `prendre #<iid>` (ex. `prendre #42`) + DCO.
+3. Après merge : CI assigne l’issue, pose `en-cours`, bloque les doubles claims.
+
+Puis **coder** : branche feature + MR classique avec **DCO** (`Signed-off-by: Prénom NOM <email>`).
 
 Contact : [contact@tutodecode.org](mailto:contact@tutodecode.org)
 

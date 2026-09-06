@@ -43,6 +43,13 @@ class VolunteerTask {
           l.toLowerCase() == 'proposition') ||
       !isBug;
 
+  /// iid numérique GitLab (`#42` → 42), ou null si fallback local.
+  int? get issueIid {
+    final m = RegExp(r'^#?(\d+)$').firstMatch(id.trim());
+    if (m == null) return null;
+    return int.tryParse(m.group(1)!);
+  }
+
   /// Mappe une issue GitLab vers une carte Hub.
   factory VolunteerTask.fromGitlabIssue(Map<String, dynamic> json) {
     final iid = json['iid'];
