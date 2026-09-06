@@ -13,11 +13,20 @@ Index détaillé : [VOLUNTEER_BOARD.md](./VOLUNTEER_BOARD.md) (pas de tableau à
 - **Proposer une idée** / **Signaler un bug** (jeton scope `api`) ;
 - **Préparer ma MR prendre** (deep-link + marqueur `volunteer/claims/<iid>.md`).
 
+**Via GitLab** (modèles d’issue — le menu Type Incident/Issue/Task n’est pas personnalisable sur GitLab.com) :
+
+- **Proposition** → labels `benevolat` + `proposition` + `wishlist` ;
+- **Bug_benevolat** → `benevolat` + `bug` ;
+- **Prendre_une_tache** → rappel uniquement : le claim se fait par MR `prendre #N`, pas par une issue.
+
+Type **Task** optionnel pour le suivi ; il ne remplace ni labels ni claim.
+
 ### Prendre une tâche (automatisé)
 
 1. Issue libre → branche `volunteer/prendre-<iid>` + fichier `volunteer/claims/<iid>.md` (pseudo GitLab).
-2. MR titrée **exactement** `prendre #<iid>` (ex. `prendre #42`) + DCO.
-3. Après merge : CI assigne l’issue, pose `en-cours`, bloque les doubles claims.
+2. MR titrée **exactement** `prendre #<iid>` (ex. `prendre #42`) + DCO — modèle MR **Prendre** recommandé.
+3. Après merge de **cette** MR : CI assigne l’issue, pose `en-cours`, bloque les doubles claims.  
+   Merger une issue « Proposition » **n’assigne pas** ; la MR de code ferme l’issue une fois le travail livré.
 
 Puis **coder** : branche feature + MR classique avec **DCO** (`Signed-off-by: Prénom NOM <email>`).
 
