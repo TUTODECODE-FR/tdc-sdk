@@ -48,7 +48,7 @@ Guide : [CONTRIBUTING.md](./CONTRIBUTING.md)
 | TDC-006 | Libre | P2 | Template cheat sheet Docker | Entrées `entry` Docker (build, run, compose…) exportables via Studio App. | Pédagogie, `.tdc` | — | — |
 | TDC-007 | Libre | P2 | Template cheat sheet iptables / réseau | Entrées `entry` iptables / filtrage réseau, niveau débutant→intermédiaire. | Pédagogie, réseau | — | — |
 | TDC-008 | Libre | P2 | Franciser les messages de validation `.tdc` | Remplacer / traduire les messages d’erreur parser & validation affichés dans Studio (FR cohérent). | Flutter/Dart, FR | — | — |
-| TDC-009 | En cours | P2 | Empty state quiz guidé | Quand un module n’a pas de quiz, afficher un empty state avec CTA « Ajouter un quiz » plutôt qu’une section absente. | Flutter, UX | @CavaleriCristina | — |
+| TDC-009 | En cours | P2 | Empty state quiz guidé | Quand un module n’a pas de quiz, afficher un empty state avec CTA « Ajouter un quiz » plutôt qu’une section absente. | Flutter, UX | @CavaleriCristina (En cours) | — |
 | TDC-010 | Libre | P3 | Panneau d’aide mode Éditorial | Ajouter / enrichir un panneau d’aide contextuelle dans l’éditeur de cours (raccourcis, structure `.tdc`). | Flutter, UX writing | — | — |
 | TDC-011 | Libre | P2 | Import cheat sheets : conserver les `warnings` | À l’import d’un `.tdc` d’entrées, ne pas perdre les champs `warnings` / métadonnées déjà présentes. | Dart, parser | — | — |
 | TDC-012 | Libre | P3 | Aperçu import cours plus riche | Enrichir l’aperçu « Importer un cours .tdc » (modules, quiz, durée) avant export. | Flutter, UX | — | — |

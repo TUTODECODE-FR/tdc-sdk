@@ -34,3 +34,7 @@ flutter run -d macos -t lib/main.dart
 ## Hub Communauté
 
 Depuis le lanceur : **Hub Communauté** pour parcourir [VOLUNTEER_BOARD.md](../VOLUNTEER_BOARD.md), proposer une idée ou signaler un bug. Le jeton GitLab (scope `api`) n’est requis que pour ces envois. Pour contribuer du code : MR classique avec DCO (voir [CONTRIBUTING.md](../CONTRIBUTING.md)).
+
+### Communauté / contributeurs
+
+Le projet accueille des bénévoles (dev, UX, doc). Voir [CONTRIBUTORS.md](../CONTRIBUTORS.md) — notamment **Cristina Cavaleri** (@CavaleriCristina) sur l’empty state quiz (TDC-009).

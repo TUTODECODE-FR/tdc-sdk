@@ -208,9 +208,25 @@ Ansible permet l'automatisation sans agent (*agentless*) via OpenSSH.
 
 ---
 
-## 🤝 Contribuer
+## 🤝 Communauté / Bénévoles
 
-Les bénévoles consultent le **[tableau des idées](./VOLUNTEER_BOARD.md)** (wishlist), peuvent proposer / signaler un bug via le **Hub Communauté** de TDC Studio, puis ouvrent une MR avec DCO. Voir [CONTRIBUTING.md](./CONTRIBUTING.md).
+TDC-SDK est porté par l’**Association TUTODECODE** et une **communauté de bénévoles** (dev, UX, pédagogie, doc).
+
+- Tableau des idées : **[VOLUNTEER_BOARD.md](./VOLUNTEER_BOARD.md)**
+- Dans l’app : lanceur TDC Studio → **Hub Communauté**
+- Liste des contributeurs : **[CONTRIBUTORS.md](./CONTRIBUTORS.md)**
+
+### Contribuer en 3 étapes
+
+1. Consulter le [tableau des idées](./VOLUNTEER_BOARD.md) (ou proposer une idée / signaler un bug via le Hub).
+2. Ouvrir une branche et développer (Flutter, `.tdc`, doc…).
+3. Proposer une **Merge Request** avec DCO (`Signed-off-by`).
+
+Pas de réservation de tâche dans l’app — on se coordonne via le tableau (Note / MR) et GitLab. Détail : [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+### Bénévoles (aperçu)
+
+Parmi les contributions en cours : **Cristina Cavaleri** ([@CavaleriCristina](https://gitlab.com/CavaleriCristina)) — TDC Studio, empty state quiz ([TDC-009](./VOLUNTEER_BOARD.md)). Liste complète : [CONTRIBUTORS.md](./CONTRIBUTORS.md).
 
 ---
 
