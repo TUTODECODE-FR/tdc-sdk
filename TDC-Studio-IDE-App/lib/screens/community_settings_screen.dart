@@ -68,12 +68,22 @@ class _CommunitySettingsScreenState extends State<CommunitySettingsScreen> {
       _saving = true;
       _statusMsg = null;
     });
+    // set* met à jour le cache mémoire immédiatement (le Hub le relit sans restart).
     await CommunitySettingsService.setPat(_patCtrl.text);
     await CommunitySettingsService.setUsername(_userCtrl.text);
     await CommunitySettingsService.setProjectPath(_projectCtrl.text);
     await CommunitySettingsService.setHost(_hostCtrl.text);
 
-    if (verify && _patCtrl.text.trim().isNotEmpty) {
+    if (verify) {
+      if (_patCtrl.text.trim().isEmpty) {
+        setState(() {
+          _saving = false;
+          _statusOk = false;
+          _statusMsg =
+              'Le jeton est requis pour participer (scope « api »).';
+        });
+        return;
+      }
       final r = await GitlabVolunteerService.verifyPat(_patCtrl.text.trim());
       if (r.ok && r.username != null) {
         _userCtrl.text = r.username!;
@@ -163,9 +173,10 @@ class _CommunitySettingsScreenState extends State<CommunitySettingsScreen> {
                       ),
                       SizedBox(height: 8),
                       Text(
-                        'Relie ton compte GitLab pour prendre une tâche, '
-                        'proposer une idée ou signaler un souci — sans jargon, '
-                        'juste de l\'entraide.',
+                        'Pour proposer une idée ou signaler un bug depuis '
+                        'l’app, ajoute ton pseudo GitLab et un jeton personnel. '
+                        'La lecture du tableau reste possible sans jeton. '
+                        'Pour coder : branche + MR (voir CONTRIBUTING).',
                         style: TextStyle(color: Colors.white70, height: 1.4),
                       ),
                     ],
@@ -196,7 +207,23 @@ class _CommunitySettingsScreenState extends State<CommunitySettingsScreen> {
                     hint: CommunitySettingsService.defaultProjectPath,
                   ),
                 ),
+                const SizedBox(height: 28),
+                const Text(
+                  'LIENS / SOUTENIR',
+                  style: TextStyle(
+                    color: Colors.white54,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.1,
+                  ),
+                ),
                 const SizedBox(height: 10),
+                const Text(
+                  'Repos publics et soutien libre — sans « claim » de tâche. '
+                  'On avance ensemble, à ton rythme.',
+                  style: TextStyle(color: Colors.white38, fontSize: 12, height: 1.35),
+                ),
+                const SizedBox(height: 8),
                 Align(
                   alignment: Alignment.centerLeft,
                   child: TextButton.icon(
@@ -206,8 +233,33 @@ class _CommunitySettingsScreenState extends State<CommunitySettingsScreen> {
                     },
                     icon: const Icon(Icons.open_in_new, size: 16, color: _beige),
                     label: const Text(
-                      'Ouvrir le projet sur GitLab',
+                      'Projet GitLab — TDC-SDK',
                       style: TextStyle(color: _beige),
+                    ),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: () => openExternalUrl(
+                      CommunitySettingsService.gitlabOrgUrl,
+                    ),
+                    icon: const Icon(Icons.group_outlined, size: 16, color: _beige),
+                    label: const Text(
+                      'Organisation GitLab — tutodecode-org',
+                      style: TextStyle(color: _beige),
+                    ),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    onPressed: () => openExternalUrl(
+                      CommunitySettingsService.liberapayUrl,
+                    ),
+                    child: const Text(
+                      '❤️ Soutenir TUTODECODE',
+                      style: TextStyle(color: Color(0xFFE11D48)),
                     ),
                   ),
                 ),
@@ -226,8 +278,8 @@ class _CommunitySettingsScreenState extends State<CommunitySettingsScreen> {
                   controller: _userCtrl,
                   style: const TextStyle(color: Colors.white),
                   decoration: _fieldDeco(
-                    'Pseudo GitLab (affiché)',
-                    hint: 'ex. cristina',
+                    'Pseudo GitLab (requis pour participer)',
+                    hint: 'ex. ton-pseudo-gitlab',
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -236,7 +288,7 @@ class _CommunitySettingsScreenState extends State<CommunitySettingsScreen> {
                   obscureText: _obscurePat,
                   style: const TextStyle(color: Colors.white),
                   decoration: _fieldDeco(
-                    'Jeton d\'accès personnel (optionnel)',
+                    'Jeton d\'accès personnel (requis pour participer)',
                     hint: 'glpat-…',
                   ).copyWith(
                     suffixIcon: IconButton(
@@ -251,8 +303,9 @@ class _CommunitySettingsScreenState extends State<CommunitySettingsScreen> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Le jeton doit avoir le droit « api ». Il reste sur cet ordinateur '
-                  '(préférences locales). Tu peux le révoquer à tout moment.',
+                  'Nécessaire pour proposer une idée ou signaler un bug via '
+                  'GitLab. Scope « api ». Stocké uniquement en local sur cet '
+                  'ordinateur — tu peux le révoquer à tout moment.',
                   style: TextStyle(color: Colors.white38, fontSize: 12, height: 1.35),
                 ),
                 const SizedBox(height: 8),

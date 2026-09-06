@@ -2,20 +2,18 @@
 
 TDC-SDK est la suite d’outils officielle du langage **TUTODECODE Script (`.tdc`)**.
 
-## Tableau des bénévoles (source de vérité)
+## Tableau des idées (wishlist)
 
-**Avant d’ouvrir une issue ou de coder au hasard**, consulte et mets à jour le cahier des charges vivant :
+👉 **[VOLUNTEER_BOARD.md](./VOLUNTEER_BOARD.md)** — backlog des améliorations ouvertes (statut, compétences, lien MR).
 
-👉 **[VOLUNTEER_BOARD.md](./VOLUNTEER_BOARD.md)** — backlog des améliorations, statut, et colonne **Pris par** (ton pseudo GitLab/GitHub).
+**Via l’app TDC Studio** → lanceur → **Hub Communauté** :
 
-**Via l'app TDC Studio** → lanceur → **Hub Communauté** (ou **Paramètres → Communauté / Bénévolat**) : claim, idées et bugs sans formulaire MR manuel — le hub utilise l'API GitLab ; le board reste la référence.
+- lire le tableau ;
+- **Proposer une idée** / **Signaler un bug** (jeton GitLab scope `api` dans Paramètres → Communauté).
 
-- Claim en 4 étapes : choisir `Libre` → Hub « Je m'en occupe » (ou MR qui **ne remplit que** **Pris par** (`@username`) + `En cours`) → travailler sur une branche → au merge : `Fait` + lien MR.
-- Si **Pris par** est rempli → **ne pas prendre** (discussion ou autre tâche). Soft lock **14 jours** sans activité → retour à `Libre`. Une tâche `En cours` à la fois (recommandé).
-- Une tâche = une Merge Request, avec **DCO** (`Signed-off-by`).
-- Contact : [contact@tutodecode.org](mailto:contact@tutodecode.org)
+**Pour coder** : branche dédiée + Merge Request avec **DCO** (`Signed-off-by: Prénom NOM <email>`). Pas de réservation de tâche dans l’app.
 
-Les issues GitLab restent utiles pour discuter un point précis, mais **le board est la référence** pour savoir qui fait quoi.
+Contact : [contact@tutodecode.org](mailto:contact@tutodecode.org)
 
 ## Deux profils de contributeurs
 

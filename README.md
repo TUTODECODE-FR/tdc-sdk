@@ -210,7 +210,7 @@ Ansible permet l'automatisation sans agent (*agentless*) via OpenSSH.
 
 ## 🤝 Contribuer
 
-Les bénévoles choisissent une tâche sur le **[tableau des contributions](./VOLUNTEER_BOARD.md)** (cahier des charges vivant : statut + colonne « Pris par »), puis ouvrent une MR avec DCO. Voir aussi [CONTRIBUTING.md](./CONTRIBUTING.md).
+Les bénévoles consultent le **[tableau des idées](./VOLUNTEER_BOARD.md)** (wishlist), peuvent proposer / signaler un bug via le **Hub Communauté** de TDC Studio, puis ouvrent une MR avec DCO. Voir [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ---
 
