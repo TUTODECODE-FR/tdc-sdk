@@ -68,6 +68,7 @@ class _CommunitySettingsScreenState extends State<CommunitySettingsScreen> {
       _saving = true;
       _statusMsg = null;
     });
+    // set* met à jour le cache mémoire immédiatement (le Hub le relit sans restart).
     await CommunitySettingsService.setPat(_patCtrl.text);
     await CommunitySettingsService.setUsername(_userCtrl.text);
     await CommunitySettingsService.setProjectPath(_projectCtrl.text);

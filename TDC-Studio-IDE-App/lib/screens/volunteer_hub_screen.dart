@@ -114,6 +114,9 @@ class _VolunteerHubScreenState extends State<VolunteerHubScreen> {
     required String submitLabel,
     required Future<GitlabVolunteerResult> Function(String t, String d) send,
   }) async {
+    // Toujours relire le cache (évite un Hub stale après Enregistrer / Vérifier).
+    final pat = await CommunitySettingsService.getPat();
+    _hasPat = pat != null;
     if (!_hasPat) {
       await _needPatDialog();
       return;
