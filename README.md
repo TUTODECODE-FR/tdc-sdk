@@ -208,9 +208,26 @@ Ansible permet l'automatisation sans agent (*agentless*) via OpenSSH.
 
 ---
 
-## 🤝 Contribuer
+## 🤝 Communauté / Bénévoles
 
-Les bénévoles consultent le **[tableau des idées](./VOLUNTEER_BOARD.md)** (wishlist), peuvent proposer / signaler un bug via le **Hub Communauté** de TDC Studio, puis ouvrent une MR avec DCO. Voir [CONTRIBUTING.md](./CONTRIBUTING.md).
+TDC-SDK est porté par l’**Association TUTODECODE** et une **communauté de bénévoles** (dev, UX, pédagogie, doc).
+
+- **Issues live** : [label `benevolat`](https://gitlab.com/tutodecode-org/tdc-sdk/-/issues/?label_name[]=benevolat)
+- Index : **[VOLUNTEER_BOARD.md](./VOLUNTEER_BOARD.md)**
+- Dans l’app : lanceur TDC Studio → **Hub Communauté** (API Issues)
+- Contributeurs : **[CONTRIBUTORS.md](./CONTRIBUTORS.md)**
+
+### Contribuer en 3 étapes
+
+1. Consulter les [issues bénévolat](https://gitlab.com/tutodecode-org/tdc-sdk/-/issues/?label_name[]=benevolat) (ou le Hub).
+2. Ouvrir une branche et développer (Flutter, `.tdc`, doc…).
+3. Proposer une **Merge Request** avec DCO (`Signed-off-by`).
+
+Rien à éditer à la main dans un tableau markdown. Détail : [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+### Bénévoles (aperçu)
+
+Parmi les contributions en cours : **Cristina Cavaleri** ([@CavaleriCristina](https://gitlab.com/CavaleriCristina)) — TDC Studio, empty state quiz. Liste : [CONTRIBUTORS.md](./CONTRIBUTORS.md).
 
 ---
 

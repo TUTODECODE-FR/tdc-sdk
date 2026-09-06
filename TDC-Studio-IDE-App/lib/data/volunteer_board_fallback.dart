@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Copyright (C) 2026 TUTODECODE Association <contact@tutodecode.org>
 
-/// Contenu de secours si le réseau / GitLab est indisponible.
+/// Fallback hors ligne si l’API Issues GitLab est indisponible.
+/// Source de vérité en ligne : issues label `benevolat`.
 const volunteerBoardFallbackMarkdown = '''
 # Tableau des contributions bénévoles — TDC-SDK
 

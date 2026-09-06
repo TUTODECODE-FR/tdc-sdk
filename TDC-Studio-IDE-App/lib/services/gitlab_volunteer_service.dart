@@ -24,9 +24,15 @@ class GitlabVolunteerResult {
   });
 }
 
-/// Hub bénévolat ↔ GitLab API (lecture board + issues idée/bug).
+/// Hub bénévolat ↔ GitLab Issues API (liste live + création idée/bug).
+///
+/// Source de vérité : issues labellisées `benevolat` (souvent + `wishlist` /
+/// `bug` / `proposition`). Fallback hors ligne : markdown embarqué.
 class GitlabVolunteerService {
   GitlabVolunteerService._();
+
+  /// Label commun à toutes les issues du board bénévolat.
+  static const volunteerLabel = 'benevolat';
 
   static String _projectId(String path) => Uri.encodeComponent(path);
 
@@ -42,25 +48,57 @@ class GitlabVolunteerService {
     return h;
   }
 
-  /// Charge le board depuis GitLab (raw), sinon fallback embarqué.
+  /// Charge le board depuis les **issues GitLab** (label `benevolat`).
+  /// Sans réseau / sans issues : fallback markdown embarqué.
   static Future<({List<VolunteerTask> tasks, bool fromNetwork, String? error})>
       loadBoard() async {
     try {
-      final rawUrl = await CommunitySettingsService.boardRawUrl();
+      final host = await CommunitySettingsService.getHost();
+      final project = await CommunitySettingsService.getProjectPath();
+      final pid = _projectId(project);
       final headers = await _headers();
-      final res = await http
-          .get(Uri.parse(rawUrl), headers: headers)
-          .timeout(const Duration(seconds: 12));
+
+      // Issues ouvertes + récemment fermées (state=all, filtrées côté client).
+      final uri = Uri.parse('$host/api/v4/projects/$pid/issues').replace(
+        queryParameters: {
+          'labels': volunteerLabel,
+          'state': 'all',
+          'per_page': '100',
+          'order_by': 'updated_at',
+          'sort': 'desc',
+        },
+      );
+
+      final res =
+          await http.get(uri, headers: headers).timeout(const Duration(seconds: 12));
+
       if (res.statusCode >= 200 && res.statusCode < 300) {
-        final tasks = VolunteerBoardParser.parse(res.body);
-        if (tasks.isNotEmpty) {
-          return (tasks: tasks, fromNetwork: true, error: null);
+        final list = jsonDecode(res.body);
+        if (list is List) {
+          final tasks = list
+              .whereType<Map>()
+              .map((e) => VolunteerTask.fromGitlabIssue(
+                    Map<String, dynamic>.from(e),
+                  ))
+              .toList();
+          if (tasks.isNotEmpty) {
+            return (tasks: tasks, fromNetwork: true, error: null);
+          }
+          return (
+            tasks: VolunteerBoardParser.parse(volunteerBoardFallbackMarkdown),
+            fromNetwork: true,
+            error:
+                'Aucune issue « $volunteerLabel » pour l’instant — aperçu local '
+                '(crée des issues avec ce label sur GitLab).',
+          );
         }
       }
+
+      // Projet public sans PAT peut échouer ; tenter sans label si 404 labels.
       return (
         tasks: VolunteerBoardParser.parse(volunteerBoardFallbackMarkdown),
         fromNetwork: false,
-        error: 'Board distant indisponible (${res.statusCode}) — aperçu local.',
+        error: 'Issues GitLab indisponibles (${res.statusCode}) — aperçu local.',
       );
     } catch (e) {
       return (
@@ -106,7 +144,7 @@ class GitlabVolunteerService {
     return _createLabeledIssue(
       title: title,
       description: description,
-      label: 'proposition',
+      labels: const [volunteerLabel, 'wishlist', 'proposition'],
       prefix: '💡 Proposition',
     );
   }
@@ -118,7 +156,7 @@ class GitlabVolunteerService {
     return _createLabeledIssue(
       title: title,
       description: description,
-      label: 'bug',
+      labels: const [volunteerLabel, 'bug'],
       prefix: '🐛 Bug',
     );
   }
@@ -126,7 +164,7 @@ class GitlabVolunteerService {
   static Future<GitlabVolunteerResult> _createLabeledIssue({
     required String title,
     required String description,
-    required String label,
+    required List<String> labels,
     required String prefix,
   }) async {
     final pat = await CommunitySettingsService.getPat();
@@ -158,7 +196,7 @@ class GitlabVolunteerService {
           '**Auteur·rice** : @$username\n\n'
           '$description\n\n'
           '---\n_Envoyé via le Hub Communauté de TDC Studio._',
-      'labels': label,
+      'labels': labels.join(','),
     });
 
     try {

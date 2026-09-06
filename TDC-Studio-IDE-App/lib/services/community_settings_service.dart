@@ -139,13 +139,68 @@ class CommunitySettingsService {
     return '$host/$path';
   }
 
+  /// Liste live des issues bénévolat (source de vérité).
   static Future<String> boardWebUrl() async {
     final base = await projectWebUrl();
-    return '$base/-/blob/main/VOLUNTEER_BOARD.md';
+    return '$base/-/issues/?label_name[]=benevolat';
   }
 
+  /// Ancien fichier index (doc) — plus utilisé pour la liste Hub.
   static Future<String> boardRawUrl() async {
     final base = await projectWebUrl();
     return '$base/-/raw/main/VOLUNTEER_BOARD.md';
+  }
+
+  /// Deep-link « nouvelle MR » avec titre prérempli `prendre #<iid>`.
+  ///
+  /// La branche source doit déjà exister sur GitLab (Guest ne peut souvent
+  /// pas la créer via API) — le Hub affiche les commandes git à côté.
+  static Future<String> claimMergeRequestUrl({
+    required int issueIid,
+    String? username,
+  }) async {
+    final base = await projectWebUrl();
+    final title = 'prendre #$issueIid';
+    final branch = 'volunteer/prendre-$issueIid';
+    final user = (username ?? await getUsername())?.trim();
+    final marker = (user == null || user.isEmpty)
+        ? 'username: TON_PSEUDO_GITLAB'
+        : 'username: ${user.replaceFirst(RegExp(r'^@'), '')}';
+    final description = [
+      'Claim automatique pour l\'issue !$issueIid.',
+      '',
+      'Marqueur : `volunteer/claims/$issueIid.md`',
+      '```',
+      marker,
+      '```',
+      '',
+      'Après merge, la CI assigne l\'issue et pose le label `en-cours`.',
+    ].join('\n');
+    final q = {
+      'merge_request[source_branch]': branch,
+      'merge_request[target_branch]': 'main',
+      'merge_request[title]': title,
+      'merge_request[description]': description,
+    };
+    return '$base/-/merge_requests/new?${Uri(queryParameters: q).query}';
+  }
+
+  /// Instructions shell pour préparer le claim (copiables dans le Hub).
+  static String claimGitInstructions({
+    required int issueIid,
+    String? username,
+  }) {
+    final user = (username == null || username.trim().isEmpty)
+        ? 'TON_PSEUDO_GITLAB'
+        : username.trim().replaceFirst(RegExp(r'^@'), '');
+    return '''
+git fetch origin
+git checkout -b volunteer/prendre-$issueIid origin/main
+mkdir -p volunteer/claims
+printf 'username: $user\\n' > volunteer/claims/$issueIid.md
+git add volunteer/claims/$issueIid.md
+git commit -s -m "chore(volunteer): prendre #$issueIid"
+git push -u origin HEAD
+'''.trim();
   }
 }
