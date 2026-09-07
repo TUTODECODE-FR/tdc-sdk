@@ -30,6 +30,12 @@ Type **Task** optionnel pour le suivi ; il ne remplace ni labels ni claim.
 
 Puis **coder** : branche feature + MR classique avec **DCO** (`Signed-off-by: Prénom NOM <email>`).
 
+### DCO et trailers interdits
+
+- Chaque commit de MR doit porter un `Signed-off-by:` (job CI `dco_check`).
+- **Ne pas** ajouter `Co-authored-by: Cursor <…>` (ni équivalent) : le job CI `no_cursor_coauthor` et le script [`scripts/check_no_cursor_coauthor.sh`](./scripts/check_no_cursor_coauthor.sh) le refusent sur les nouveaux commits. L’historique déjà publié sur `main` n’est **pas** réécrit.
+- Hook local optionnel : `cp scripts/hooks/commit-msg.sample .git/hooks/commit-msg && chmod +x .git/hooks/commit-msg`.
+
 Contact : [contact@tutodecode.org](mailto:contact@tutodecode.org)
 
 ## Deux profils de contributeurs
