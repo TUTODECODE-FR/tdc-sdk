@@ -11,6 +11,7 @@ Pour rejoindre : [issues `benevolat`](https://gitlab.com/tutodecode-org/tdc-sdk/
 | Nom | GitLab | Contribution |
 | :--- | :--- | :--- |
 | **Cristina Cavaleri** | [@CavaleriCristina](https://gitlab.com/CavaleriCristina) | TDC Studio — empty state quiz guidé |
+| **Charles Wang** | [@nlpsuge](https://gitlab.com/nlpsuge) | Développeur — à assigner |
 
 ## Mainteneurs
 

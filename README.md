@@ -227,7 +227,7 @@ Rien à éditer à la main dans un tableau markdown. Détail : [CONTRIBUTING.md]
 
 ### Bénévoles (aperçu)
 
-Parmi les contributions en cours : **Cristina Cavaleri** ([@CavaleriCristina](https://gitlab.com/CavaleriCristina)) — TDC Studio, empty state quiz. Liste : [CONTRIBUTORS.md](./CONTRIBUTORS.md).
+Parmi les contributions en cours : **Cristina Cavaleri** ([@CavaleriCristina](https://gitlab.com/CavaleriCristina)) — TDC Studio, empty state quiz ; **Charles Wang** ([@nlpsuge](https://gitlab.com/nlpsuge)) — développeur, à assigner. Liste : [CONTRIBUTORS.md](./CONTRIBUTORS.md).
 
 ---
 
