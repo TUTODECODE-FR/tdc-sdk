@@ -1,10 +1,10 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # SPDX-License-Identifier: GPL-3.0-only
 # Sample commit-msg hook: block Cursor co-author trailers locally.
 # Install: cp scripts/hooks/commit-msg.sample .git/hooks/commit-msg && chmod +x .git/hooks/commit-msg
-set -euo pipefail
+set -eu
 MSG_FILE="${1:-}"
-if [[ -z "$MSG_FILE" || ! -f "$MSG_FILE" ]]; then
+if [ -z "$MSG_FILE" ] || [ ! -f "$MSG_FILE" ]; then
   exit 0
 fi
 if grep -Eiq 'Co-authored-by:[[:space:]]*Cursor[[:space:]]*<' "$MSG_FILE"; then

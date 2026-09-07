@@ -83,9 +83,11 @@ no_cursor_coauthor:
   script:
     - git config --global --add safe.directory "$CI_PROJECT_DIR"
     - TARGET_BRANCH="${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-main}"
-    - git fetch origin "$TARGET_BRANCH" || true
+    # Materialize remote-tracking ref (fresh CI clones often only update FETCH_HEAD).
+    - git fetch origin "${TARGET_BRANCH}:refs/remotes/origin/${TARGET_BRANCH}" || true
     - chmod +x scripts/check_no_cursor_coauthor.sh
-    - ./scripts/check_no_cursor_coauthor.sh "origin/${TARGET_BRANCH}..HEAD"
+    # Script is POSIX /bin/sh (alpine/git has no bash).
+    - sh ./scripts/check_no_cursor_coauthor.sh "origin/${TARGET_BRANCH}..HEAD"
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: on_success
