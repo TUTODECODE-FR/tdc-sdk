@@ -74,6 +74,22 @@ dco_check:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: on_success
 
+# Forward protection only (does not rewrite historical main commits).
+no_cursor_coauthor:
+  stage: validate
+  image:
+    name: alpine/git
+    entrypoint: [""]
+  script:
+    - git config --global --add safe.directory "$CI_PROJECT_DIR"
+    - TARGET_BRANCH="${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-main}"
+    - git fetch origin "$TARGET_BRANCH" || true
+    - chmod +x scripts/check_no_cursor_coauthor.sh
+    - ./scripts/check_no_cursor_coauthor.sh "origin/${TARGET_BRANCH}..HEAD"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: on_success
+
 # Anti-collision « prendre #<iid> » — voir VOLUNTEER_BOARD.md / scripts/volunteer_claim_apply.py
 # Variable CI recommandée : PROJECT_ACCESS_TOKEN (api) pour la vérif assignee live.
 volunteer_claim_validate:
