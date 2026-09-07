@@ -12,11 +12,13 @@ Le **Hub Communauté** de TDC Studio lit les issues en live via l’API GitLab.
 
 - **Hub Communauté** (TDC Studio) → *Proposer une idée* / *Un problème ?*  
   (jeton GitLab scope `api` → crée l’issue avec `benevolat` + `wishlist|bug|proposition`)
-- **Ou** créer une [issue GitLab](https://gitlab.com/tutodecode-org/tdc-sdk/-/issues/new) avec ces labels.
+- **Ou** [nouvelle issue](https://gitlab.com/tutodecode-org/tdc-sdk/-/issues/new) → modèle **Proposition** ou **Bug_benevolat**  
+  (labels préremplis). Le dropdown Type (Incident / Issue / Task) **n’accepte pas** de types custom sur GitLab.com : on s’appuie sur **modèles + labels**.
 
 ### 2. Prendre une tâche (`prendre #<iid>`)
 
-Anti-collision : une seule personne peut être assignee. Le CI bloque une 2ᵉ claim.
+Anti-collision : une seule personne peut être assignee. Le CI bloque une 2ᵉ claim.  
+**Ne pas** ouvrir une issue « Prendre » pour claimer — le modèle *Prendre_une_tache* renvoie ici.
 
 1. Choisir une issue **ouverte sans assignee** (statut « Libre » dans le Hub).
 2. Créer la branche `volunteer/prendre-<iid>` (ex. `volunteer/prendre-42`).
@@ -27,16 +29,22 @@ username: ton-pseudo
 ```
 
 4. Ouvrir une **Merge Request** dont le titre est **exactement** : `prendre #<iid>`  
-   (ex. `prendre #42`). Corps minimal OK. **DCO** obligatoire.
-5. Maxime (ou un reviewer) **valide / merge** la MR.
+   (ex. `prendre #42`). Modèle MR **Prendre** recommandé. **DCO** obligatoire.
+5. Maxime (ou un reviewer) **valide / merge** la MR claim.
 
 **Hub** : bouton *Préparer ma MR prendre* → deep-link GitLab (titre prérempli) + instructions.
 
 ### 3. Après le merge (automatique)
 
+| Merge de… | Effet |
+| :--- | :--- |
+| Issue / discussion « Proposition » | ❌ ne réserve pas la tâche |
+| MR `prendre #N` (titre +/ou `volunteer/claims/`) | ✅ CI assigne + `en-cours` |
+| MR de **code** | ✅ ferme l’issue (livraison) |
+
 Le job CI `volunteer_claim_apply` sur `main` :
 
-1. détecte le claim (fichier marqueur et/ou titre `prendre #N`) ;
+1. détecte le claim (fichier marqueur et/ou titre `prendre #N`) — distinct des MR de code ;
 2. assigne l’issue à l’auteur du claim ;
 3. ajoute le label `en-cours`, retire `libre` s’il est présent.
 
