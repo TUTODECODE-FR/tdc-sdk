@@ -5,7 +5,8 @@
 # TDC Studio n'est PAS une app Android : aucun job Android ici.
 # Builds OS (Win/Mac/Linux) = GitHub Actions UNIQUEMENT, après acceptation
 # du merge (push main → auto_tag → tag v* → mirror GitHub → release.yml).
-# Les pipelines MR = validate seulement (pas de flutter build OS).
+# Les pipelines MR = validate (analyze/test/security) + compile-check Linux optionnel.
+# Les artefacts release multi-OS restent sur GitHub Actions (après tag v*).
 #
 # Trois types de pipeline :
 #   1. MR (merge_request_event) → stage validate uniquement
@@ -108,26 +109,53 @@ volunteer_claim_validate:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: on_success
 
-test_and_analyze:
+# Analyze must fail on infos/warnings (no soft fallback).
+flutter_analyze:
   stage: validate
   script:
     - cd "$STUDIO_DIR"
     - flutter pub get
-    - flutter analyze --no-fatal-infos --no-fatal-warnings
-    - flutter test
-    - cd ..
-    - python3 scripts/audit_airgap_leak.py
-    - python3 scripts/audit_binary_hardening.py
-    - python3 scripts/generate_sbom.py
-    - python3 scripts/check_dependency_confusion.py "$STUDIO_DIR/pubspec.yaml"
-    - python3 scripts/validate_tdc.py examples/ || true
+    - flutter analyze --fatal-infos --fatal-warnings
     - |
-      if grep -q "url: \"http://" "$STUDIO_DIR/pubspec.lock" 2>/dev/null; then
+      if grep -q "url: \"http://" pubspec.lock 2>/dev/null; then
         echo "❌ Error: Insecure HTTP dependency source found in pubspec.lock!"
         exit 1
       else
         echo "✅ Supply chain HTTPS check passed."
       fi
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: on_success
+
+flutter_test:
+  stage: validate
+  script:
+    - cd "$STUDIO_DIR"
+    - flutter pub get
+    - flutter test
+    - cd ..
+    - python3 scripts/validate_tdc.py examples/ || true
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: on_success
+
+# Optional MR compile check (release binaries still built on GitHub after tag).
+# allow_failure: transitional until shared runners + apt deps are proven green.
+build_linux_check:
+  stage: validate
+  allow_failure: true
+  before_script:
+    - |
+      export DEBIAN_FRONTEND=noninteractive
+      apt-get update -y
+      apt-get install -y --no-install-recommends \
+        clang cmake ninja-build pkg-config \
+        libgtk-3-dev liblzma-dev
+  script:
+    - cd "$STUDIO_DIR"
+    - flutter pub get
+    - flutter config --enable-linux-desktop
+    - flutter build linux --debug
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: on_success
@@ -161,52 +189,13 @@ sbom_generator:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: on_success
 
-fuzz_testing_suite:
+# Single security-parity suite (formerly 4 duplicate jobs running the same test file).
+studio_security_parity:
   stage: validate
   script:
     - cd "$STUDIO_DIR"
     - flutter pub get
     - flutter test test/unit/studio_security_parity_test.dart
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: on_success
-
-deep_health_recesses_test:
-  stage: validate
-  script:
-    - cd "$STUDIO_DIR"
-    - flutter pub get
-    - flutter test test/unit/studio_security_parity_test.dart
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: on_success
-
-ai_safety_guard_test:
-  stage: validate
-  script:
-    - cd "$STUDIO_DIR"
-    - flutter pub get
-    - flutter test test/unit/studio_security_parity_test.dart
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: on_success
-
-constant_time_crypto_test:
-  stage: validate
-  script:
-    - cd "$STUDIO_DIR"
-    - flutter pub get
-    - flutter test test/unit/studio_security_parity_test.dart
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: on_success
-
-strict_type_compilation_check:
-  stage: validate
-  script:
-    - cd "$STUDIO_DIR"
-    - flutter pub get
-    - flutter analyze --fatal-infos --fatal-warnings || flutter analyze --no-fatal-infos --no-fatal-warnings
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: on_success
@@ -242,15 +231,17 @@ megalinter:
   variables:
     DEFAULT_WORKSPACE: $CI_PROJECT_DIR
     MEGALINTER_CONFIG: .mega-linter.yml
+    # Full-tree scan (VALIDATE_ALL_CODEBASE) can be noisy on existing main — keep soft until cleaned.
     DISABLE_ERRORS: "true"
   script:
-    # MegaLinter runs via image entrypoint; keep job green like T2DECODE.
+    # MegaLinter runs via image entrypoint; job stays soft while codebase debt is cleared.
     - "true"
   artifacts:
     when: always
     paths:
       - megalinter-reports
     expire_in: 1 week
+  # Transitional: full-codebase MegaLinter may fail on pre-existing findings.
   allow_failure: true
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
@@ -262,8 +253,7 @@ gitleaks:
     name: zricethezav/gitleaks:latest
     entrypoint: [""]
   script:
-    - gitleaks detect --verbose --source=. --no-git=false || true
-  allow_failure: true
+    - gitleaks detect --verbose --source=. --no-git=false
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: on_success
@@ -274,8 +264,7 @@ trivy_scan:
     name: aquasec/trivy:latest
     entrypoint: [""]
   script:
-    - trivy fs --security-checks config,vuln,secret --severity HIGH,CRITICAL .
-  allow_failure: true
+    - trivy fs --scanners config,vuln,secret --severity HIGH,CRITICAL --exit-code 1 .
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: on_success
@@ -305,12 +294,12 @@ semgrep_sast:
   stage: validate
   image: returntocorp/semgrep:latest
   script:
-    - semgrep scan --config auto --exclude="build" --exclude="assets" || true
-  allow_failure: true
+    - semgrep scan --config auto --exclude="build" --exclude="assets" --error
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: on_success
 
+# ClamAV stays soft: signature FPs / mirror freshness can fail clean trees.
 clamav_antivirus:
   stage: validate
   image: clamav/clamav:latest
@@ -355,10 +344,10 @@ military_hardening_audit:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: on_success
 
-# === Pas de stage build-test sur GitLab ===
-# TDC Studio = desktop uniquement. Les binaires Win/macOS/Linux sont produits
-# par GitHub Actions (.github/workflows/release.yml) UNIQUEMENT après merge
-# accepté → tag v* (jamais sur une MR). Aucun job Android (Studio n'en a pas).
+# === Artefacts release multi-OS = GitHub Actions uniquement ===
+# MR peut lancer build_linux_check (compile-check soft). Les binaires Win/macOS/Linux
+# de release restent produits par .github/workflows/release.yml après tag v*.
+# Aucun job Android (Studio n'en a pas).
 
 # === STAGE: VOLUNTEER CLAIM APPLY (main after merge of prendre #N) ===
 # Assigne l'issue GitLab + label en-cours. Idempotent. Skip si pas de claim.

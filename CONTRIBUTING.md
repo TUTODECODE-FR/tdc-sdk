@@ -36,6 +36,38 @@ Puis **coder** : branche feature + MR classique avec **DCO** (`Signed-off-by: Pr
 - **Ne pas** ajouter `Co-authored-by: Cursor <…>` (ni équivalent) : le job CI `no_cursor_coauthor` et le script [`scripts/check_no_cursor_coauthor.sh`](./scripts/check_no_cursor_coauthor.sh) le refusent sur les nouveaux commits. L’historique déjà publié sur `main` n’est **pas** réécrit.
 - Hook local optionnel : `cp scripts/hooks/commit-msg.sample .git/hooks/commit-msg && chmod +x .git/hooks/commit-msg`.
 
+### Contrôles CI obligatoires (chaque MR)
+
+Toute MR vers `main` déclenche le stage **validate**. Les jobs suivants doivent passer (sauf mention contraire) :
+
+| Job | Rôle |
+|-----|------|
+| `dco_check` | `Signed-off-by:` sur chaque commit de la MR |
+| `no_cursor_coauthor` | Interdit `Co-authored-by: Cursor` |
+| `volunteer_claim_validate` | Anti-collision claims bénévolat |
+| `flutter_analyze` | `flutter analyze --fatal-infos --fatal-warnings` + lockfile HTTPS |
+| `flutter_test` | Suite de tests Flutter (+ validation `.tdc` soft) |
+| `studio_security_parity` | Tests de parité sécurité Studio |
+| `airgap_leak_canary` | Détection fuites réseau / airgap |
+| `binary_hardening_audit` | Durcissement binaires |
+| `sbom_generator` | Génération SBOM |
+| `dependency_confusion_shield` | Confusion de dépendances |
+| `secrets_and_private_keys_scan` | Secrets / clés privées en dur |
+| `backdoor_and_anti_malware_scan` | Motifs reverse-shell / exécution distante |
+| `zero_trust_tamper_defense` | Caractères Bidi / Trojan Source |
+| `military_hardening_audit` | APIs mémoire C non sûres / shell brut |
+| `gitleaks` | Secrets dans l’historique Git (**bloquant**) |
+| `trivy_scan` | Vulns / config / secrets HIGH+CRITICAL (**bloquant**) |
+| `semgrep_sast` | SAST Semgrep (**bloquant**) |
+
+Jobs **soft** (ne bloquent pas la MR pour l’instant) :
+
+- `megalinter` — lint multi-langues sur **tout** le dépôt (`VALIDATE_ALL_CODEBASE`) ; `allow_failure` tant que le bruit historique n’est pas résorbé
+- `clamav_antivirus` — antivirus ; `allow_failure` (faux positifs / mirrors)
+- `build_linux_check` — compile-check Linux desktop (deps apt) ; `allow_failure` transitoire
+
+Les binaires release Win/macOS/Linux restent produits **uniquement** par GitHub Actions après merge + tag `v*` (voir `docs/ci-github-mirror.md`).
+
 Contact : [contact@tutodecode.org](mailto:contact@tutodecode.org)
 
 ## Deux profils de contributeurs

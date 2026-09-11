@@ -14,4 +14,5 @@ EXCLUDED_DIRECTORIES:
   - build
   - .dart_tool
   - TDC-Studio.app
-VALIDATE_ALL_CODEBASE: false
+# Scan the full checkout on every MR (not only the git diff).
+VALIDATE_ALL_CODEBASE: true
