@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (C) 2026 TUTODECODE Association <contact@tutodecode.org>
+#
+# Allowlist for known false positives when scanning full Git history.
+# Real secret detection remains active on all other paths (current tree + history).
+# Used by the GitLab `gitleaks` job (MR validate stays on GitLab — not GitHub Actions).
+
+title = "TDC-SDK gitleaks config"
+
+[extend]
+useDefault = true
+
+# F-Droid metadata vendored historically: public APK signing fingerprints and
+# upstream build recipes (including third-party API keys in those recipes) —
+# not TDC product secrets.
+[[allowlists]]
+description = "Historical F-Droid third-party metadata (public fingerprints / upstream recipes)"
+paths = [
+  '''(^|/)fdroid_data_repo/''',
+]
+
+# Educational Lab simulator used demo PEM material; file removed from HEAD but
+# still present in Git history — not a production private key.
+[[allowlists]]
+description = "Removed educational cryptography_simulator.dart demo PEMs (history only)"
+paths = [
+  '''(^|/)lib/features/lab/simulators/cryptography_simulator\.dart$''',
+]

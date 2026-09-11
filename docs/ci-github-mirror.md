@@ -2,6 +2,8 @@
 
 GitLab est la **source de vérité** (MR, validation, tags). GitHub sert uniquement aux **builds multi-OS** (Linux, Windows, macOS) via GitHub Actions — **aucun `flutter build linux/windows/macos` sur les runners GitLab**.
 
+**Quota Actions storage** : le forfait gratuit inclut ~2 Go d’artefacts/caches (distinct des minutes). Ne pas ajouter de workflows MR validate sur GitHub tant que le compte perso / org est saturé ; préférer nettoyer artefacts/caches ([billing](https://github.com/settings/billing)) ou migrer les releases vers l’org `TUTODECODE-FR` si un plan payant existe. Le stage MR `gate`/`validate` reste sur GitLab.
+
 ## Flux automatique : merge MR → release
 
 ```
@@ -27,7 +29,7 @@ GitLab est la **source de vérité** (MR, validation, tags). GitHub sert uniquem
 
 | Déclencheur | Stages exécutés | Impact quota GitLab |
 |-------------|-----------------|---------------------|
-| **MR** (`merge_request_event`) | `validate` uniquement (DCO, analyze, tests, audits…) | Modéré — pas de build OS |
+| **MR** (`merge_request_event`) | `gate` puis `validate` (fail-fast ; analyze/security GitLab) | Modéré — pas de build OS |
 | **main** (push après merge) | `sync-os-builds` → `auto_tag` seul | Minimal (~1 min) |
 | **tag** `v*` | `sync-os-builds` + `release` (mirror → sync → release_gitlab) | Faible — attente curl, pas de compile Flutter OS |
 

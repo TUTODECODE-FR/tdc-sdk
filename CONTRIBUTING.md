@@ -38,7 +38,9 @@ Puis **coder** : branche feature + MR classique avec **DCO** (`Signed-off-by: Pr
 
 ### Contrôles CI obligatoires (chaque MR)
 
-Toute MR vers `main` déclenche le stage **validate**. Les jobs suivants doivent passer (sauf mention contraire) :
+Toute MR vers `main` déclenche d’abord le stage **gate**, puis **validate** (fail-fast : `workflow.auto_cancel.on_job_failure: all`). Les jobs suivants doivent passer (sauf mention contraire) :
+
+**Gate** (bloquants tôt) :
 
 | Job | Rôle |
 |-----|------|
@@ -46,6 +48,13 @@ Toute MR vers `main` déclenche le stage **validate**. Les jobs suivants doivent
 | `no_cursor_coauthor` | Interdit `Co-authored-by: Cursor` |
 | `volunteer_claim_validate` | Anti-collision claims bénévolat |
 | `flutter_analyze` | `flutter analyze --fatal-infos --fatal-warnings` + lockfile HTTPS |
+| `gitleaks` | Secrets dans l’historique Git (**bloquant** ; FPs documentés dans `.gitleaks.toml`) |
+| `semgrep_sast` | SAST Semgrep (**bloquant**) |
+
+**Validate** (après gate ; jobs lourds `needs` analyze/gitleaks) :
+
+| Job | Rôle |
+|-----|------|
 | `flutter_test` | Suite de tests Flutter (+ validation `.tdc` soft) |
 | `studio_security_parity` | Tests de parité sécurité Studio |
 | `airgap_leak_canary` | Détection fuites réseau / airgap |
@@ -56,9 +65,7 @@ Toute MR vers `main` déclenche le stage **validate**. Les jobs suivants doivent
 | `backdoor_and_anti_malware_scan` | Motifs reverse-shell / exécution distante |
 | `zero_trust_tamper_defense` | Caractères Bidi / Trojan Source |
 | `military_hardening_audit` | APIs mémoire C non sûres / shell brut |
-| `gitleaks` | Secrets dans l’historique Git (**bloquant**) |
 | `trivy_scan` | Vulns / config / secrets HIGH+CRITICAL (**bloquant**) |
-| `semgrep_sast` | SAST Semgrep (**bloquant**) |
 
 Jobs **soft** (ne bloquent pas la MR pour l’instant) :
 
@@ -66,7 +73,7 @@ Jobs **soft** (ne bloquent pas la MR pour l’instant) :
 - `clamav_antivirus` — antivirus ; `allow_failure` (faux positifs / mirrors)
 - `build_linux_check` — compile-check Linux desktop (deps apt) ; `allow_failure` transitoire
 
-Les binaires release Win/macOS/Linux restent produits **uniquement** par GitHub Actions après merge + tag `v*` (voir `docs/ci-github-mirror.md`).
+La **validation MR reste sur GitLab**. GitHub Actions sert **uniquement** aux builds release multi-OS après tag `v*` (voir `docs/ci-github-mirror.md`) — le stockage Actions gratuit (artefacts / caches) est limité ; ne pas y déporter analyze/security.
 
 Contact : [contact@tutodecode.org](mailto:contact@tutodecode.org)
 

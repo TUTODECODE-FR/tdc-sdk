@@ -129,6 +129,8 @@ class _VolunteerHubScreenState extends State<VolunteerHubScreen> {
     final titleCtrl = TextEditingController();
     final descCtrl = TextEditingController();
 
+    if (!mounted) return;
+
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(

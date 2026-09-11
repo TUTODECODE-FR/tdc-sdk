@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Copyright (C) 2026 TUTODECODE Association <contact@tutodecode.org>
-/// Lightweight parity tests for T2DECODE-named validate jobs.
+// Lightweight parity tests for T2DECODE-named validate jobs.
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tdc_studio/tdc_parser_v2.dart';
 

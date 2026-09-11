@@ -3,13 +3,13 @@
 # CI TDC-SDK / TDC Studio v2.0.0 — desktop only (Win / macOS / Linux)
 #
 # TDC Studio n'est PAS une app Android : aucun job Android ici.
-# Builds OS (Win/Mac/Linux) = GitHub Actions UNIQUEMENT, après acceptation
-# du merge (push main → auto_tag → tag v* → mirror GitHub → release.yml).
-# Les pipelines MR = validate (analyze/test/security) + compile-check Linux optionnel.
-# Les artefacts release multi-OS restent sur GitHub Actions (après tag v*).
+# MR validate (analyze / test / security) = GitLab uniquement (pas de surcharge
+# GitHub Actions storage/minutes sur le compte perso).
+# Builds OS (Win/Mac/Linux) = GitHub Actions UNIQUEMENT après merge + tag v*
+# (.github/workflows/release.yml) — garder le quota Actions storage sous contrôle.
 #
 # Trois types de pipeline :
-#   1. MR (merge_request_event) → stage validate uniquement
+#   1. MR → stage gate puis validate (fail-fast si un job échoue)
 #   2. main (push après merge MR) → auto_tag uniquement (~1 min Alpine)
 #   3. tag v* → mirror_tag_to_github → sync_github_multi_os_builds → release_gitlab
 # Voir docs/ci-github-mirror.md
@@ -23,11 +23,14 @@ variables:
   # Mirror GitHub repo that builds multi-OS binaries (saves GitLab runner minutes).
   GITHUB_RELEASE_REPO: "TUTODECODE-FR/tdc-sdk"
 
+# interruptible: cancel mid-run when auto_cancel fires (job failure / newer pipeline).
 default:
-  interruptible: false
+  interruptible: true
 
 # Pas de pipeline sur les branches feature (économie quotas) — seulement MR, main et tags.
 workflow:
+  auto_cancel:
+    on_job_failure: all
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == "main"
@@ -35,6 +38,7 @@ workflow:
     - when: never
 
 stages:
+  - gate
   - validate
   - sync-os-builds
   - release
@@ -44,9 +48,9 @@ cache:
   paths:
     - .pub-cache/global_packages
 
-# === STAGE: VALIDATE (parity with T2DECODE) ===
+# === STAGE: GATE (cheap / early blockers — fail-fast before heavy jobs) ===
 dco_check:
-  stage: validate
+  stage: gate
   image:
     name: alpine/git
     entrypoint: [""]
@@ -77,7 +81,7 @@ dco_check:
 
 # Forward protection only (does not rewrite historical main commits).
 no_cursor_coauthor:
-  stage: validate
+  stage: gate
   image:
     name: alpine/git
     entrypoint: [""]
@@ -96,7 +100,7 @@ no_cursor_coauthor:
 # Anti-collision « prendre #<iid> » — voir VOLUNTEER_BOARD.md / scripts/volunteer_claim_apply.py
 # Variable CI recommandée : PROJECT_ACCESS_TOKEN (api) pour la vérif assignee live.
 volunteer_claim_validate:
-  stage: validate
+  stage: gate
   image: python:3.12-alpine
   before_script:
     - apk add --no-cache git
@@ -111,7 +115,7 @@ volunteer_claim_validate:
 
 # Analyze must fail on infos/warnings (no soft fallback).
 flutter_analyze:
-  stage: validate
+  stage: gate
   script:
     - cd "$STUDIO_DIR"
     - flutter pub get
@@ -127,8 +131,33 @@ flutter_analyze:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: on_success
 
+gitleaks:
+  stage: gate
+  image:
+    name: zricethezav/gitleaks:latest
+    entrypoint: [""]
+  script:
+    - gitleaks detect --verbose --source=. --config=.gitleaks.toml --no-git=false
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: on_success
+
+semgrep_sast:
+  stage: gate
+  image: returntocorp/semgrep:latest
+  script:
+    # GitLab Runner mounts the repo under /builds/..., not /src. Semgrep's
+    # Docker heuristic expects /src and otherwise aborts before scanning.
+    - ln -sfn "$CI_PROJECT_DIR" /src
+    - semgrep scan --config auto --exclude="build" --exclude="assets" --error /src
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: on_success
+
+# === STAGE: VALIDATE (runs after gate; expensive jobs also declare needs) ===
 flutter_test:
   stage: validate
+  needs: [flutter_analyze]
   script:
     - cd "$STUDIO_DIR"
     - flutter pub get
@@ -143,6 +172,7 @@ flutter_test:
 # allow_failure: transitional until shared runners + apt deps are proven green.
 build_linux_check:
   stage: validate
+  needs: [flutter_analyze, gitleaks]
   allow_failure: true
   before_script:
     - |
@@ -162,6 +192,7 @@ build_linux_check:
 
 airgap_leak_canary:
   stage: validate
+  needs: [flutter_analyze, gitleaks]
   script:
     - python3 scripts/audit_airgap_leak.py
   rules:
@@ -170,6 +201,7 @@ airgap_leak_canary:
 
 binary_hardening_audit:
   stage: validate
+  needs: [flutter_analyze, gitleaks]
   script:
     - python3 scripts/audit_binary_hardening.py
   rules:
@@ -178,6 +210,7 @@ binary_hardening_audit:
 
 sbom_generator:
   stage: validate
+  needs: [flutter_analyze, gitleaks]
   script:
     - python3 scripts/generate_sbom.py
   artifacts:
@@ -192,6 +225,7 @@ sbom_generator:
 # Single security-parity suite (formerly 4 duplicate jobs running the same test file).
 studio_security_parity:
   stage: validate
+  needs: [flutter_analyze]
   script:
     - cd "$STUDIO_DIR"
     - flutter pub get
@@ -202,6 +236,7 @@ studio_security_parity:
 
 dependency_confusion_shield:
   stage: validate
+  needs: [flutter_analyze, gitleaks]
   script:
     - python3 scripts/check_dependency_confusion.py "$STUDIO_DIR/pubspec.yaml"
   rules:
@@ -210,6 +245,7 @@ dependency_confusion_shield:
 
 secrets_and_private_keys_scan:
   stage: validate
+  needs: [gitleaks]
   script:
     - |
       if grep -rE "(AKIA[0-9A-Z]{16}|GH[A-Za-z0-9_]{36,40}|SG\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{43}|sk_live_[0-9a-zA-Z]{24}|AIza[0-9A-Za-z-_]{35}|xox[baprs]-[0-9a-zA-Z]{10,48}|-----BEGIN [A-Z ]*PRIVATE KEY-----)" . \
@@ -227,6 +263,7 @@ secrets_and_private_keys_scan:
 
 megalinter:
   stage: validate
+  needs: [flutter_analyze, gitleaks]
   image: oxsecurity/megalinter:v8
   variables:
     DEFAULT_WORKSPACE: $CI_PROJECT_DIR
@@ -247,19 +284,9 @@ megalinter:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: on_success
 
-gitleaks:
-  stage: validate
-  image:
-    name: zricethezav/gitleaks:latest
-    entrypoint: [""]
-  script:
-    - gitleaks detect --verbose --source=. --no-git=false
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: on_success
-
 trivy_scan:
   stage: validate
+  needs: [flutter_analyze, gitleaks]
   image:
     name: aquasec/trivy:latest
     entrypoint: [""]
@@ -271,6 +298,7 @@ trivy_scan:
 
 backdoor_and_anti_malware_scan:
   stage: validate
+  needs: [flutter_analyze, gitleaks]
   script:
     - echo "🔍 Scanning codebase for backdoor patterns..."
     - |
@@ -290,18 +318,10 @@ backdoor_and_anti_malware_scan:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: on_success
 
-semgrep_sast:
-  stage: validate
-  image: returntocorp/semgrep:latest
-  script:
-    - semgrep scan --config auto --exclude="build" --exclude="assets" --error
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: on_success
-
 # ClamAV stays soft: signature FPs / mirror freshness can fail clean trees.
 clamav_antivirus:
   stage: validate
+  needs: [flutter_analyze, gitleaks]
   image: clamav/clamav:latest
   script:
     - freshclam || true
@@ -313,6 +333,7 @@ clamav_antivirus:
 
 zero_trust_tamper_defense:
   stage: validate
+  needs: [flutter_analyze, gitleaks]
   script:
     - echo "🛡️ Zero-Trust Bidi Attack Audit..."
     - |
@@ -328,6 +349,7 @@ zero_trust_tamper_defense:
 
 military_hardening_audit:
   stage: validate
+  needs: [flutter_analyze, gitleaks]
   script:
     - echo "🛡️ Military-Grade Hardening Audit..."
     - |
